@@ -90,7 +90,7 @@ cvar_t	r_drawviewmodel    = {"r_drawviewmodel",    "1"         };
 cvar_t	r_speeds           = {"r_speeds",           "0"         };
 cvar_t	r_fullbright       = {"r_fullbright",       "0"         };
 cvar_t	r_lightmap         = {"r_lightmap",         "0"         };
-cvar_t	r_shadows          = {"r_shadows",          "0"         };
+cvar_t	r_shadows          = {"r_shadows",          "0",qtrue };
 cvar_t	r_mirroralpha      = {"r_mirroralpha",      "1"         };
 cvar_t	r_wateralpha       = {"r_wateralpha",       "0.6", qtrue};
 cvar_t	r_vsync            = {"r_vsync",            "0",   qtrue};
@@ -555,7 +555,7 @@ GL_DrawAliasShadow
 extern	vec3_t			lightspot;
 
 void GL_DrawAliasShadow (aliashdr_t *paliashdr, int posenum)
-{/*
+{
 	float	s, t, l;
 	int		i, j;
 	int		index;
@@ -579,18 +579,29 @@ void GL_DrawAliasShadow (aliashdr_t *paliashdr, int posenum)
 	while (1)
 	{
 		// get the vertex count and primitive type
+		int prim;
 		count = *order++;
+
 		if (!count)
 			break;		// done
+
 		if (count < 0)
 		{
 			count = -count;
-			glBegin (GL_TRIANGLE_FAN);
+			prim =  GU_TRIANGLE_FAN;
 		}
 		else
-			glBegin (GL_TRIANGLE_STRIP);
+			prim =  GU_TRIANGLE_STRIP;
 
-		do
+		// Allocate the vertices.
+		struct vertex
+		{
+			float x, y, z;
+		};
+
+		vertex* const out = static_cast<vertex*>(sceGuGetMemory(sizeof(vertex) * count));
+
+		for (int vertex_index = 0; vertex_index < count; ++vertex_index)
 		{
 			// texture coordinates come from the draw list
 			// (skipped for shadows) glTexCoord2fv ((float *)order);
@@ -604,15 +615,15 @@ void GL_DrawAliasShadow (aliashdr_t *paliashdr, int posenum)
 			point[0] -= shadevector[0]*(point[2]+lheight);
 			point[1] -= shadevector[1]*(point[2]+lheight);
 			point[2] = height;
-			glVertex3fv (point);
 
+			out[vertex_index].x = point[0];
+            out[vertex_index].y = point[1];
+            out[vertex_index].z = point[2];
 			verts++;
-		} while (--count);
-
-		glEnd ();
-	}	*/
+		}
+		sceGuDrawArray(prim, GU_VERTEX_32BITF, count, 0, out);
+	}
 }
-
 
 
 /*
@@ -849,15 +860,42 @@ void R_DrawAliasModel (entity_t *e)
 
 	if (r_shadows.value)
 	{
+		// Tomaz - New Shadow Begin
+		trace_t		downtrace;
+		vec3_t		downmove;
+		// Tomaz - New Shadow End
+
 		sceGumPushMatrix();
+
 		R_RotateForEntity (e);
-		
+
+		VectorCopy (e->origin, downmove);
+
+		downmove[2] = downmove[2] - 4096;
+		memset (&downtrace, 0, sizeof(downtrace));
+		SV_RecursiveHullCheck (cl.worldmodel->hulls, 0, 0, 1, e->origin, downmove, &downtrace);
+
+		sceGuDisable (GU_TEXTURE_2D);
+		sceGuEnable (GU_BLEND);
+		sceGuDepthMask(GU_TRUE); // disable zbuffer updates
+		sceGuColor(GU_COLOR(0,0,0,(1 - ((mins[2]-downtrace.endpos[2])/60))));
+
+		//stencil shadows
+		sceGuEnable(GU_STENCIL_TEST);
+		sceGuStencilFunc(GU_EQUAL,1,2);
+		sceGuStencilOp(GU_KEEP,GU_KEEP,GU_INCR);
+
 		GL_DrawAliasShadow (paliashdr, lastposenum);
-	
+
+		sceGuDisable(GU_STENCIL_TEST);
+
 		sceGumPopMatrix();
 		sceGumUpdateMatrix();
+		sceGuColor(0xffffffff);
+		sceGuDepthMask(GU_FALSE); // enable zbuffer updates
+		sceGuEnable (GU_TEXTURE_2D);
+		sceGuDisable (GU_BLEND);
 	}
-
 }
 
 //==================================================================================

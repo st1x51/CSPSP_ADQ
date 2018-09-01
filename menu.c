@@ -41,7 +41,7 @@ extern cvar_t	in_y_axis_adjust;
 extern cvar_t	crosshair;
 extern cvar_t	crosshaircolor;
 extern cvar_t	r_dithering;
-
+extern cvar_t   r_shadows;
 extern cvar_t	sp;
 extern cvar_t	mp;
 extern cvar_t	op;
@@ -3020,7 +3020,8 @@ enum
 {
 	OPT_SUBMENU_0 = OPT_SUBMENU,	
 	OPT_GAMMA,			
-	OPT_SNDVOL,		
+	OPT_SNDVOL,	
+	OPT_SHADOWS,
     OPTIONS_ITEMS_0
 };
 enum 
@@ -3134,6 +3135,10 @@ void M_AdjustSliders (int dir)
 					volume.value = 1;
 				Cvar_SetValue ("volume", volume.value);
 				break;
+			case OPT_SHADOWS:	// shadows
+				Cvar_SetValue ("r_shadows", !r_shadows.value);
+				break;	
+				
 				/*
 			case OPT_QMB:
 				if(qmb_particles.value == 1)
@@ -3271,6 +3276,8 @@ void M_Options_Draw (void)
 			r = volume.value;
 			M_DrawSlider (220, 32+(OPT_SNDVOL*8), r);
 			
+			M_Print (16, 32+(OPT_SHADOWS*8),   "          Shadows");
+			M_DrawCheckbox (220, 32+(OPT_SHADOWS*8), r_shadows.value);
 		//	M_Print (16, 32+(OPT_QMB*8),   "          QMB");
 			//M_DrawCheckbox (220, 32+(OPT_QMB*8), qmb_particles.value);
 		
