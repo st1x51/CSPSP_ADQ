@@ -28,13 +28,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <pspkernel.h>
 #include <psputility.h>
 #include "net_dgrm.h"
-
+#include <pspwlan.h>
 
 extern cvar_t	accesspoint;
 extern cvar_t	r_wateralpha;
 extern cvar_t	r_vsync;
 extern cvar_t	in_disable_analog;
 extern cvar_t	in_analog_strafe;
+extern cvar_t   in_analog_freelook;
 extern cvar_t	in_x_axis_adjust;
 extern cvar_t	in_y_axis_adjust;
 extern cvar_t	crosshair;
@@ -2577,11 +2578,8 @@ void M_MultiPlayer_Key (int key)
 			break;
 
 		case 3:
-			Datagram_Shutdown();		
-			tcpipAvailable = !tcpipAvailable;
-			if(tcpipAvailable)
-				Datagram_Init();
-			break;
+		Datagram_Shutdown();
+
 		}
 	}
 }
@@ -3020,12 +3018,9 @@ enum
 };
 enum 
 {
-	OPT_SUBMENU_0 = OPT_SUBMENU,
-    OPT_CRHAIR,
-	OPT_CRCOLOR,	
+	OPT_SUBMENU_0 = OPT_SUBMENU,	
 	OPT_GAMMA,			
 	OPT_SNDVOL,		
-	OPT_QMB,
     OPTIONS_ITEMS_0
 };
 enum 
@@ -3036,7 +3031,6 @@ enum
 	OPT_IN_TOLERANCE,
 	OPT_IN_ACCELERATION,	
 	OPT_INVMOUSE,	
-	OPT_NOMOUSE,
 	OPT_MOUSELOOK,
 	OPT_MOUSESTAFE,	
 	OPT_IN_X_ADJUST,
@@ -3054,9 +3048,7 @@ enum
 };
 enum 
 {
-	OPT_SUBMENU_0 = OPT_SUBMENU,
-    OPT_CRHAIR,
-	OPT_CRCOLOR,	
+	OPT_SUBMENU_0 = OPT_SUBMENU,	
 	OPT_GAMMA,			
 	OPT_SNDVOL,		
     OPTIONS_ITEMS_0
@@ -3069,7 +3061,6 @@ enum
 	OPT_IN_TOLERANCE,
 	OPT_IN_ACCELERATION,	
 	OPT_INVMOUSE,	
-	OPT_NOMOUSE,
 	OPT_MOUSELOOK,
 	OPT_MOUSESTAFE,
 	OPT_IN_X_ADJUST,
@@ -3107,6 +3098,7 @@ void M_AdjustSliders (int dir)
     {
     	switch (options_cursor)
         {
+			/*
 			case OPT_CRHAIR:
 				crosshair.value += dir * 1;
 				if(crosshair.value > 6)
@@ -3115,6 +3107,7 @@ void M_AdjustSliders (int dir)
 					crosshair.value = 0;
 				Cvar_SetValue ("crosshair", crosshair.value);
 				break;
+			*/
 				/*
 			case OPT_CRCOLOR:	
 				crosshaircolor.value += dir * 10;
@@ -3225,7 +3218,7 @@ void M_AdjustSliders (int dir)
 				Cvar_SetValue ("in_analog_strafe", !in_analog_strafe.value);
 				break;
 			case OPT_MOUSELOOK:
-				//Cvar_SetValue ("in_mlook", !in_mlook.value);
+				Cvar_SetValue ("in_analog_freelook", !in_analog_freelook.value);
 				break;
         }	
     }    
@@ -3314,7 +3307,7 @@ void M_Options_Draw (void)
 			M_DrawCheckbox (220, 32+(OPT_INVMOUSE*8), m_pitch.value < 0);
 		
 			M_Print (16, 32+(OPT_MOUSELOOK*8),       "            A-Nub Look");
-			//M_DrawCheckbox (220, 32+(OPT_MOUSELOOK*8), in_mlook.value);
+			M_DrawCheckbox (220, 32+(OPT_MOUSELOOK*8), in_analog_freelook.value);
 
 		////	M_Print (16, 32+(OPT_NOMOUSE*8),         "         Disable A-Nub");
 		//	M_DrawCheckbox (220, 32+(OPT_NOMOUSE*8), in_disable_analog.value );
@@ -4057,8 +4050,7 @@ void M_LanConfig_Draw (void)
 
 	if (JoiningGame)
 	{
-		M_Print (basex, lanConfig_cursor_table[1], "Search for local games...");
-		//M_Print (basex, lanConfig_cursor_table[1], "Connect to test server");
+		M_Print (basex, lanConfig_cursor_table[1], "Search for adhoc games...");
 		M_Print (basex, 108, "Join game at:");
 		M_DrawTextBox (basex+8, lanConfig_cursor_table[2]-8, 22, 1);
 		M_Print (basex+16, lanConfig_cursor_table[2], lanConfig_joinname);
@@ -4137,13 +4129,6 @@ void M_LanConfig_Key (int key)
 				break;
 			}
 			M_Menu_Search_f();
-			
-			m_return_state = m_state;
-			m_return_onerror = true;
-			key_dest = key_game;
-			m_state = m_none;
-			//Cbuf_AddText ("connect 194.87.238.108 \n");
-			
 			break;
 		}
 
@@ -4473,17 +4458,12 @@ void M_Menu_Search_f (void)
 	slistLocal = false;
 	searchComplete = false;
 	NET_Slist_f();
-
 }
 
 
 void M_Search_Draw (void)
 {
-	qpic_t	*p;
 	int x;
-
-	p = Draw_CachePic ("gfx/p_multi.lmp");
-	M_DrawPic ( (320-p->width)/2, 4, p);
 	x = (320/2) - ((12*8)/2) + 4;
 	M_DrawTextBox (x-8, 32, 12, 1);
 	M_Print (x, 40, "Searching...");
@@ -4539,9 +4519,9 @@ void M_Networks_Draw (void)
             M_Menu_MultiPlayer_f ();
 		return;}
 	f = (int)(host_time * 10)%6;
-	M_PrintWhite(-50,200,"Infrastructure"); // st1x51: just only infrastructure
+	M_PrintWhite(-50,200,"Adhoc"); 
 	M_PrintWhite(200,200,"Press X to ON");
-	M_DrawCheckbox (100, 200, tcpipAvailable);
+	M_DrawCheckbox (100, 200, tcpipAvailable && tcpipAdhoc);
 }
 
 void M_Networks_Key (int key)
@@ -4553,15 +4533,19 @@ void M_Networks_Key (int key)
 		break;
 	case K_ENTER:
 		m_entersound = true;
-		Datagram_Shutdown();
-			
-		tcpipAvailable = !tcpipAvailable;
+		            Datagram_Shutdown();
 
-		if(tcpipAvailable) {
-			Datagram_Init();
+			tcpipAvailable = !tcpipAvailable;
+
+
+			if(tcpipAvailable && sceWlanDevIsPowerOn())
+			{
+				tcpipAdhoc = true;
+				net_driver_to_use = 1;
+				Datagram_Init();
 			}
-
-		if (serialAvailable || ipxAvailable || tcpipAvailable)
+			break;
+		if (serialAvailable || ipxAvailable || tcpipAvailable || tcpipAdhoc)
 			M_Menu_MultiPlayer_f ();
 		break;
 	}

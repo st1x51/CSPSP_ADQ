@@ -424,14 +424,14 @@ void CL_ParseServerInfo (void)
 			Con_Printf("Model %s not found\n", model_precache[i]);
 			return;
 		}
-		CL_KeepaliveMessage ();
+	//	CL_KeepaliveMessage ();
 	}
 
 	S_BeginPrecaching ();
 	for (i=1 ; i<numsounds ; i++)
 	{
 		cl.sound_precache[i] = S_PrecacheSound (sound_precache[i]);
-		CL_KeepaliveMessage ();
+		//CL_KeepaliveMessage ();
 	}
 	S_EndPrecaching ();
 
