@@ -4220,15 +4220,13 @@ typedef struct
 
 level_t		levels[] =
 {
-	{"cs_italy", "Hostage Rescue",M_DrawTransPic (20, 50,Draw_CachePic("gfx/maps/cs_italy.lmp")) },
-	{"cs_assault", "Hostage Rescue"},			
+	{"cs_italy", "Hostage Rescue", },
+	{"cs_office", "Hostage Rescue"},			
 	{"de_dust", "Bomb"},
 	{"de_dust2", "Bomb"},
-	{"de_aztec", "Bomb"},
-	{"fy_poolday", "FunYard"},	
-
-
-
+	{"cs_mansion", "Hostage Rescue"},
+	{"de_cbble", "Bomb"},	
+	{"de_nuke", "Bomb"},	
 };
 
 //MED 01/06/97 added hipnotic levels
