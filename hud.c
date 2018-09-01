@@ -36,17 +36,6 @@ void Hud_Init (void)
 	Cvar_RegisterVariable (&scope);
 	Cvar_RegisterVariable (&mp_startmoney);
 }
-/*
-void Hud_DrawPicAlpha (int x, int y, qpic_t *pic, float alpha)
-{
-	Draw_AlphaPic (x + ((vid.width - 320)>>1), y + (vid.height - 24), pic, alpha);
-}
-
-void Hud_DrawPic (int x, int y, qpic_t *pic)
-{
-	Draw_AlphaPic (x + ((vid.width - 320)>>1), y + (vid.height - 24), pic,1.0f);
-}
-*/
 void Hud_Changed (void)
 {
 	sb_updates = 0;	
