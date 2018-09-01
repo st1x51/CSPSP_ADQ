@@ -101,9 +101,9 @@ void	VID_UnlockBuffer (void);
 #define	MAX_MSGLEN		8000		// max length of a reliable message
 #define	MAX_DATAGRAM	1024		// max length of unreliable message
 */
-#define	MAX_MSGLEN		16000		// max length of a reliable message
-#define	MAX_DATAGRAM	2048		// max length of unreliable message
 
+#define MAX_MSGLEN 32000 //was 8000 max length of a reliable message
+#define MAX_DATAGRAM 1400 // was 1024 // max length of unreliable message
 //
 // per-level limits
 //

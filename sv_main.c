@@ -271,7 +271,7 @@ void SV_ConnectClient (int clientnum)
 	client->edict = ent;
 	client->message.data = client->msgbuf;
 	client->message.maxsize = sizeof(client->msgbuf);
-	client->message.allowoverflow = true;		// we can catch it
+	client->message.allowoverflow = true;		// we can catch it 
 
 #ifdef IDGODS
 	client->privileged = IsID(&client->netconnection->addr);

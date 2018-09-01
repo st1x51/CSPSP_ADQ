@@ -151,7 +151,7 @@ namespace quake
 				}
 
 				// connected, get my IPADDR and run test
-				if (sceNetApctlGetInfo(8, (SceNetApctlInfo*)szMyIPAddr) != 0)
+if (sceNetApctlGetInfo(8, (union SceNetApctlInfo*)szMyIPAddr) != 0) // determine my name & address
 					strcpy(szMyIPAddr, "unknown IP address");
 
 				// determine my name & address
