@@ -30,6 +30,7 @@ extern "C"
 #include <malloc.h>
 #include <pspgu.h>
 
+#include "video_hardware_hlmdl.h"
 #include <list>
 using namespace std;
 
@@ -190,7 +191,7 @@ void Mod_ClearAll (void)
 	
 	for (i=0 , mod=mod_known ; i<mod_numknown ; i++, mod++)
 	{
-		if (mod->type != mod_alias)
+		if (mod->type != mod_alias && mod->type != mod_halflife)
 		{
 			mod->needload = qtrue;
 		}
@@ -273,7 +274,7 @@ void Mod_TouchModel (char *name)
 	
 	if (!mod->needload)
 	{
-		if (mod->type == mod_alias)
+		if (mod->type == mod_alias || mod->type == mod_halflife)
 			Cache_Check (&mod->cache);
 	}
 }
@@ -293,7 +294,7 @@ model_t *Mod_LoadModel (model_t *mod, qboolean crash)
 
 	if (!mod->needload)
 	{
-		if (mod->type == mod_alias)
+		if (mod->type == mod_alias || mod->type == mod_halflife)
 		{
 			d = Cache_Check (&mod->cache);
 			if (d)
@@ -340,6 +341,9 @@ model_t *Mod_LoadModel (model_t *mod, qboolean crash)
 	{
 	case IDPOLYHEADER:
 		Mod_LoadAliasModel (mod, buf);
+		break;
+	case HLPOLYHEADER:      //Half-Life .mdl support
+		Mod_LoadHLModel (mod, buf);
 		break;
 		
 	case IDSPRITEHEADER:

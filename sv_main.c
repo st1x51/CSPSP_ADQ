@@ -703,7 +703,9 @@ void SV_WriteClientdataToMessage (edict_t *ent, sizebuf_t *msg)
 
 //	if (ent->v.weapon)
 		bits |= SU_WEAPON;
-
+	
+	if (ent->v.sequence)
+		bits |= SU_SEQUENCE;
 // send the data
 
 	MSG_WriteByte (msg, svc_clientdata);
@@ -732,7 +734,8 @@ void SV_WriteClientdataToMessage (edict_t *ent, sizebuf_t *msg)
 		MSG_WriteByte (msg, ent->v.armorvalue);
 	if (bits & SU_WEAPON)
 		MSG_WriteByte (msg, SV_ModelIndex(pr_strings+ent->v.weaponmodel));
-	
+	if (bits & SU_SEQUENCE)
+		MSG_WriteByte (msg, ent->v.sequence);
 	MSG_WriteShort (msg, ent->v.health);
 	MSG_WriteByte (msg, ent->v.currentammo);
 	MSG_WriteByte (msg, ent->v.ammo_shells);

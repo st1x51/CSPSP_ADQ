@@ -170,3 +170,4 @@ void Matrix4x4_OriginFromMatrix( const matrix4x4 in, float *out );
 extern const matrix3x4	matrix3x4_identity;
 extern const matrix4x4	matrix4x4_identity;
 
+void VectorTransform (const vec3_t in1, matrix3x4 in2, vec3_t out);

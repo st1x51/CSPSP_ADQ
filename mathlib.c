@@ -291,7 +291,12 @@ dist2 = p->normal[0]*emaxs[0] + p->normal[1]*emaxs[1] + p->normal[2]*emaxs[2];
 
 	return sides;
 }
-
+void VectorTransform (const vec3_t in1, matrix3x4 in2, vec3_t out)
+{
+	out[0] = DotProduct(in1, in2[0]) + in2[0][3];
+	out[1] = DotProduct(in1, in2[1]) +	in2[1][3];
+	out[2] = DotProduct(in1, in2[2]) +	in2[2][3];
+}
 
 void AngleVectors (vec3_t angles, vec3_t forward, vec3_t right, vec3_t up)
 {

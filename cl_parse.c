@@ -731,7 +731,7 @@ void CL_ParseClientdata (int bits)
 		cl.stats[STAT_WEAPONFRAME] = MSG_ReadByte ();
 	else
 		cl.stats[STAT_WEAPONFRAME] = 0;
-
+	
 	if (bits & SU_ARMOR)
 		i = MSG_ReadByte ();
 	else
@@ -751,6 +751,11 @@ void CL_ParseClientdata (int bits)
 		cl.stats[STAT_WEAPON] = i;
 		Hud_Changed ();
 	}
+	
+	if (bits & SU_SEQUENCE)
+		cl.stats[STAT_SEQUENCE] = MSG_ReadByte ();
+	else
+		cl.stats[STAT_SEQUENCE] = 0;
 	
 	i = MSG_ReadShort ();
 	if (cl.stats[STAT_HEALTH] != i)
