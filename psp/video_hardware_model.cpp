@@ -195,6 +195,15 @@ void Mod_ClearAll (void)
 		{
 			mod->needload = qtrue;
 		}
+		if (mod->type == mod_alias || mod->type == mod_halflife)
+		{
+			if (Cache_Check (&mod->cache)) 	
+				Cache_Free (&mod->cache);
+		}
+		else if (mod->type == mod_sprite)
+		{
+		   mod->cache.data = NULL;
+		}
 	}
 
 	// maybe we should check if it is new map or not 

@@ -570,7 +570,7 @@ if (bits&(1<<i))
 	else
 		ent->skinnum = ent->baseline.skin;
 #endif
-
+	
 	if (bits & U_EFFECTS)
 		ent->effects = MSG_ReadByte();
 	else
@@ -581,7 +581,7 @@ if (bits&(1<<i))
 		ent->renderamt = MSG_ReadByte();
 	else
 		ent->renderamt = ent->baseline.renderamt;
-
+	
 	if (bits & U_RENDERMODE)
 		ent->rendermode = MSG_ReadByte();
 	else
@@ -602,7 +602,10 @@ if (bits&(1<<i))
 	else
 		ent->rendercolor[2] = ent->baseline.rendercolor[2];
 //New vars
-
+	if (bits & U_SEQUENCE) // 0
+		ent->sequence = MSG_ReadByte ();
+	else
+		ent->sequence = ent->baseline.sequence;
 // shift the known values for interpolation
 	VectorCopy (ent->msg_origins[0], ent->msg_origins[1]);
 	VectorCopy (ent->msg_angles[0], ent->msg_angles[1]);
@@ -660,7 +663,7 @@ void CL_ParseBaseline (entity_t *ent)
 	ent->baseline.frame = MSG_ReadByte ();
 	ent->baseline.colormap = MSG_ReadByte();
 	ent->baseline.skin = MSG_ReadByte();
-
+	ent->baseline.sequence = MSG_ReadByte();
 //New vars
 	ent->baseline.renderamt = MSG_ReadByte();
 	ent->baseline.rendermode = MSG_ReadByte();
@@ -711,7 +714,7 @@ void CL_ParseClientdata (int bits)
 		else
 			cl.mvelocity[0][i] = 0;
 	}
-
+	
 // [always sent]	if (bits & SU_ITEMS)
 		i = MSG_ReadLong ();
 
@@ -862,6 +865,7 @@ void CL_ParseStatic (void)
 	ent->frame = ent->baseline.frame;
 	ent->colormap = vid.colormap;
 	ent->skinnum = ent->baseline.skin;
+	ent->sequence = ent->baseline.sequence; // 0
 	ent->effects = ent->baseline.effects;
 //New vars
 	ent->renderamt = ent->baseline.renderamt;

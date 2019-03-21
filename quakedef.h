@@ -234,6 +234,7 @@ typedef struct
 	int		frame;
 	int		colormap;
 	int		skin;
+	int		sequence;
 	int		effects;
 //New vars
 	float	renderamt;

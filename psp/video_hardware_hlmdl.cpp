@@ -627,7 +627,7 @@ void R_DrawHLModel(entity_t	*curent)
 	//model.frame		= 0;
 	//model.frametime	= 0;
 
-	HL_NewSequence(&model, cl.stats[STAT_SEQUENCE]);
+	HL_NewSequence(&model, curent->sequence);
 
     skins = (short *) ((byte *) model.header + model.header->skins);
     sequence = (hlmdl_sequencelist_t *) ((byte *) model.header + model.header->seqindex) +
