@@ -112,6 +112,7 @@ cvar_t  r_i_model_transform   = {"r_i_model_transform",       "1",qtrue}; // Tog
 cvar_t  r_ipolations          = {"r_ipolations",              "0"};
 cvar_t  r_asynch              = {"r_asynch",                  "0"};
 cvar_t	r_showtris            = {"r_showtris",                "0"};
+cvar_t  r_maxrange            = {"r_maxrange",             "4096"}; //render distance
 /*
 cvar_t	gl_finish = {"gl_finish","0"};
 cvar_t	gl_clear = {"gl_clear","0"};
@@ -1843,7 +1844,7 @@ void R_SetupGL (void)
 	sceGuScissor(x, glheight - y2 - h, x + w, glheight - y2);
 
     screenaspect = (float)r_refdef.vrect.width/r_refdef.vrect.height;
-	sceGumPerspective(r_refdef.fov_y, screenaspect, 4, 4096);
+	sceGumPerspective(r_refdef.fov_y, screenaspect, 4, r_maxrange.value);
 
 	if (mirror)
 	{

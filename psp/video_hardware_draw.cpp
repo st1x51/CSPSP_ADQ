@@ -27,6 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <malloc.h>
 #include <pspgu.h>
 #include <pspkernel.h>
+#include <ctype.h>
 #include <vram.h>
 
 extern "C"
@@ -60,6 +61,7 @@ typedef struct
 	int		height;
 	int 	mipmaps;
 	int     swizzle;
+	qboolean islmp;
 
 	//Palette
 	ScePspRGBA8888 *palette;
@@ -78,7 +80,106 @@ typedef struct
 
 byte		conback_buffer[sizeof(qpic_t) + sizeof(glpic_t)];
 qpic_t		*conback = (qpic_t *)&conback_buffer;
+#define		NUMCROSSHAIRS 6
+int			crosshairtextures[NUMCROSSHAIRS];
+int			crosshairtexture_txt;
+qpic_t		crosshairpic;
 
+static byte customcrosshairdata[64];
+
+#define CROSSHAIR_NONE	0
+#define CROSSHAIR_TXT	1
+#define CROSSHAIR_IMAGE	2
+static int customcrosshair_loaded = CROSSHAIR_NONE;
+
+static byte crosshairdata[NUMCROSSHAIRS][64] = {
+	0xff, 0xff, 0xff, 0xfe, 0xff, 0xff, 0xff, 0xff,
+	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+	0xff, 0xff, 0xff, 0xfe, 0xff, 0xff, 0xff, 0xff,
+	0xfe, 0xff, 0xfe, 0xff, 0xfe, 0xff, 0xfe, 0xff,
+	0xff, 0xff, 0xff, 0xfe, 0xff, 0xff, 0xff, 0xff,
+	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+	0xff, 0xff, 0xff, 0xfe, 0xff, 0xff, 0xff, 0xff,
+	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+
+	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+	0xff, 0xff, 0xff, 0xfe, 0xff, 0xff, 0xff, 0xff,
+	0xff, 0xff, 0xfe, 0xfe, 0xfe, 0xff, 0xff, 0xff,
+	0xff, 0xff, 0xff, 0xfe, 0xff, 0xff, 0xff, 0xff,
+	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+
+	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+	0xff, 0xff, 0xff, 0xfe, 0xff, 0xff, 0xff, 0xff,
+	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+
+	0xfe, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xfe,
+	0xff, 0xfe, 0xff, 0xff, 0xff, 0xff, 0xfe, 0xff,
+	0xff, 0xff, 0xfe, 0xff, 0xff, 0xfe, 0xff, 0xff,
+	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+	0xff, 0xff, 0xfe, 0xff, 0xff, 0xfe, 0xff, 0xff,
+	0xff, 0xfe, 0xff, 0xff, 0xff, 0xff, 0xfe, 0xff,
+	0xfe, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xfe,
+
+	0xff, 0xff, 0xfe, 0xfe, 0xfe, 0xff, 0xff, 0xff,
+	0xff, 0xfe, 0xff, 0xfe, 0xff, 0xfe, 0xff, 0xff,
+	0xfe, 0xfe, 0xff, 0xfe, 0xff, 0xfe, 0xfe, 0xff,
+	0xfe, 0xfe, 0xfe, 0xfe, 0xfe, 0xfe, 0xfe, 0xff,
+	0xfe, 0xff, 0xfe, 0xfe, 0xfe, 0xff, 0xfe, 0xff,
+	0xff, 0xfe, 0xff, 0xff, 0xff, 0xfe, 0xff, 0xff,
+	0xff, 0xff, 0xfe, 0xfe, 0xfe, 0xff, 0xff, 0xff,
+	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+
+	0xff, 0xff, 0xfe, 0xfe, 0xfe, 0xff, 0xff, 0xff,
+	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+	0xfe, 0xff, 0xff, 0xff, 0xff, 0xff, 0xfe, 0xff,
+	0xfe, 0xff, 0xff, 0xfe, 0xff, 0xff, 0xfe, 0xff,
+	0xfe, 0xff, 0xff, 0xff, 0xff, 0xff, 0xfe, 0xff,
+	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+	0xff, 0xff, 0xfe, 0xfe, 0xfe, 0xff, 0xff, 0xff,
+	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff
+};
+void customCrosshair_Init(void)
+{
+	FILE *f;
+	int i = 0, c;
+
+	customcrosshair_loaded = CROSSHAIR_NONE;
+
+	if (FS_FOpenFile("crosshairs/crosshair.txt", &f) == -1)
+		return;
+
+	while (i < 64)
+	{
+		c = fgetc(f);
+		if (c == EOF)
+		{
+			Con_Printf("Invalid format in crosshair.txt (Need 64 X's and O's)\n");
+			fclose(f);
+			return;
+		}
+		if (isspace(c))
+			continue;
+		if (tolower(c) != 'x' && tolower(c) != 'o')
+		{
+			Con_Printf("Invalid format in crosshair.txt (Only X's and O's and whitespace permitted)\n");
+			fclose(f);
+			return;
+		}
+		customcrosshairdata[i++] = (c == 'x' || c  == 'X') ? 0xfe : 0xff;
+	}
+	fclose(f);
+	crosshairtexture_txt = GL_LoadTexture ("", 8, 8, customcrosshairdata,1, qfalse, GU_NEAREST, 0);
+	customcrosshair_loaded |= CROSSHAIR_TXT;
+}
 #define	MAX_GLTEXTURES	1024
 gltexture_t	gltextures[MAX_GLTEXTURES];
 bool 		gltextures_used[MAX_GLTEXTURES];
@@ -363,48 +464,48 @@ qpic_t	*Draw_CachePic (char *path)
 	int			i;
 	qpic_t		*dat;
 	glpic_t		*gl;
+	char		str[128];
 
+	strcpy (str, path);
 	for (pic=menu_cachepics, i=0 ; i<menu_numcachepics ; pic++, i++)
-		if (!strcmp (path, pic->name))
+		if (!strcmp (str, pic->name))
 			return &pic->pic;
 
 	if (menu_numcachepics == MAX_CACHED_PICS)
 		Sys_Error ("menu_numcachepics == MAX_CACHED_PICS");
+	menu_numcachepics++;
+	strcpy (pic->name, str);
+
 //
 // load the pic from disk
 //
-	if(strcasecmp(COM_FileExtension (path),"lmp"))
+
+	int index = loadtextureimage (str, 0, 0, qfalse, GU_LINEAR);
+	if(index)
 	{
-		int index = loadtextureimage (path, 0, 0, qfalse, GU_LINEAR);
-		if(index != -1)
-		{
-			pic->pic.width  = gltextures[index].original_width;
-			pic->pic.height = gltextures[index].original_height;
+		pic->pic.width  = gltextures[index].original_width;
+		pic->pic.height = gltextures[index].original_height;
 
-			strcpy (pic->name, path);
-			menu_numcachepics++;
+		gltextures[index].islmp = qfalse;
+		gl = (glpic_t *)pic->pic.data;
+		gl->index = index;
 
-			gl = (glpic_t *)pic->pic.data;
-			gl->index = index;
+		return &pic->pic;
+	}
 
-			return &pic->pic;
-		}
-		return NULL;
-    }
-
-    menu_numcachepics++;
-	strcpy (pic->name, path);
-	
-	dat = (qpic_t *)COM_LoadTempFile (path);	
+	dat = (qpic_t *)COM_LoadTempFile (str);
 	if (!dat)
-		Sys_Error ("Draw_CachePic: failed to load %s", path);
+	{
+		strcat (str, ".lmp");
+		dat = (qpic_t *)COM_LoadTempFile (str);
+		if (!dat)
+		{
+			Con_Printf ("Draw_CachePic: failed to load file %s\n", str);
+			return NULL;
+		}
+	}
 	SwapPic (dat);
 
-	// HACK HACK HACK --- we need to keep the bytes for
-	// the translatable player picture just for the menu
-	// configuration dialog
-	if (!strcmp (path, "gfx/menuplyr.lmp"))
-		memcpy (menuplyr_pixels, dat->data, dat->width*dat->height);
 
 	pic->pic.width = dat->width;
 	pic->pic.height = dat->height;
@@ -412,6 +513,7 @@ qpic_t	*Draw_CachePic (char *path)
 	gl = (glpic_t *)pic->pic.data;
 	gl->index = GL_LoadPicTexture (dat);
 
+	gltextures[gl->index].islmp = qtrue;
 	return &pic->pic;
 }
 
@@ -470,7 +572,7 @@ void Draw_Init (void)
 
 	start = Hunk_LowMark();
 
-	cb = (qpic_t *)COM_LoadTempFile ("gfx/conback.lmp");	
+	cb = (qpic_t *)COM_LoadTempFile ("gfx/conback.tga");	
 	if (!cb)
 		Sys_Error ("Couldn't load gfx/conback.lmp");
 	SwapPic (cb);
@@ -487,10 +589,23 @@ void Draw_Init (void)
 	ncdata = cb->data;
 
 	gl = (glpic_t *)conback->data;
-	gl->index = GL_LoadTexture ("conback", conback->width, conback->height, ncdata, 1, qfalse, GU_LINEAR, 0);
+	//gl->index = GL_LoadTexture ("gfx/conback.tga", conback->width, conback->height, ncdata, 1, qfalse, GU_LINEAR, 0);
+	gl->index = loadtextureimage_hud ("gfx/conback");
+	//if((int)cb->data != 177319192)
+	//	 Sys_Error("GTFO %i",cb->data);
 	conback->width = vid.width;
 	conback->height = vid.height;
+    // Load the crosshair pics
+	for (i = 0 ; i < NUMCROSSHAIRS ; i++)
+	{
+		crosshairtextures[i] = GL_LoadTexture ("", 8, 8, crosshairdata[i], 1,qtrue, GU_NEAREST, 0);
+	}
+    customCrosshair_Init();
 
+	//conback->width = vid.width;
+	//conback->height = vid.height;
+	conback->width = gltextures[gl->index].original_width;
+	conback->height = gltextures[gl->index].original_height;
 	// free loaded console
 	Hunk_FreeToLowMark(start);
 
@@ -576,7 +691,165 @@ void Draw_String (int x, int y, char *str)
 		x += 8;
 	}
 }
+extern"C"
+{
+ #include "font.c"
+}
 
+static int fontwidthtab[256] =
+{
+	10, 10, 10, 10,
+	10, 10, 10, 10,
+	10, 10, 10, 10,
+	10, 10, 10, 10,
+
+	10, 10, 10, 10,
+	10, 10, 10, 10,
+	10, 10, 10, 10,
+	10, 10, 10, 10,
+
+	10,  6,  8, 10, //   ! " #
+	10, 10, 10,  6, // $ % & '
+	10, 10, 10, 10, // ( ) * +
+	 6, 10,  6, 10, // , - . /
+
+	10, 10, 10, 10, // 0 1 2 3
+	10, 10, 10, 10, // 6 5 8 7
+	10, 10,  6,  6, // 10 9 : ;
+	10, 10, 10, 10, // < = > ?
+
+	16, 10, 10, 10, // @ A B C
+	10, 10, 10, 10, // D E F G
+	10,  2,  8, 10, // H I J K
+	 8, 6, 6, 10, // L M N O
+
+	10, 10, 10, 10, // P Q R S
+	10, 10, 10, 12, // T U V W
+	10, 10, 10, 10, // X Y Z [
+	10, 10,  8, 10, // \ ] ^ _
+
+	 6,  8,  8,  8, // ` a b c
+	 4,  2,  6,  8, // d e f g
+	 2,  4,  2,  8, // h i j k
+	 4, 8,  6,  8, // l m n o
+
+	 8,  2,  2,  2, // p q r s
+	 2,  8,  8, 12, // t u v w
+	 8,  8,  8, 10, // x y z {
+	 8, 10,  8, 12,  // | } ~
+	 
+	10, 10, 10, 10,
+	10, 10, 10, 10,
+	10, 10, 10, 10,
+	10, 10, 10, 10,
+
+	10, 10, 10, 10,
+	10, 10, 10, 10,
+	10, 10, 10, 10,
+	10, 10, 10, 10,
+
+	10,  6,  8, 10, // 
+	10, 10, 10,  6, //
+	10, 10, 10, 10, // 
+	6, 10,  6, 10, // 
+
+	10, 10, 10, 10, //
+	10, 10, 10, 10, // 
+	6, 10,  6,  6, // ё 
+	10, 10, 10, 10, // 
+
+	10, 10, 10, 8, // А Б В Г
+	10, 10, 12, 10, // Д Е Ж З
+	10, 10, 10, 10, // И Й К Л
+	12, 10, 10, 10, // М Н О П
+
+	10, 10, 10, 10, // Р С Т У
+	12, 10, 10, 10, // Ф Х Ц Ч
+	12, 12, 10, 10, // Ш Щ Ъ Ы
+	10, 10, 12, 10, // Ь Э Ю Я 
+
+	8,  8,  8,  8, // а б в г
+	8,  8,  10,  8,  // д е ж з
+	8,  8,  8,  8, // и й к л
+	10,  8,  8,  8, // м н о п
+
+	8,  8,  5, 8, // р с т у
+	8,  8,  8, 6, // ф х ц ч
+	12, 14,  6, 10, // ш щ ъ ы
+	6,  8,  10, 8  // ь э ю я 
+};
+
+void Draw_FrontText(char* text, int x, int y, unsigned int color, int fw) //Crow_bar
+{
+	int len = (int)strlen(text);
+
+	if(!len)
+	{
+		return;
+	}
+
+	// Set the texture mode. 
+	sceGuTexMode(GU_PSM_8888, 0, 0, 0);
+	sceGuTexImage(0, 256, 256, 256, font);
+    sceGuTexFilter(GU_NEAREST, GU_NEAREST);
+
+	sceGuShadeModel(GU_SMOOTH);
+
+    sceGuTexFunc(GU_TFX_MODULATE, GU_TCC_RGBA);
+	sceGuDepthMask(GU_TRUE);
+
+	typedef struct
+	{
+		float s, t;
+		unsigned int c;
+		float x, y, z;
+	} vertex;
+
+	vertex* const v = static_cast<vertex*>(sceGuGetMemory(sizeof(vertex) * 2 * len));
+
+	int i;
+	for(i = 0; i < len; i++)
+	{
+		unsigned char c = (unsigned char)text[i];
+		
+		if(c < 32)
+		{
+			c = 0;
+		}
+		//else if(c >= 128)
+		//{
+		//	c = 0;
+		//}
+		
+		int tx = (c & 0x0F) << 4;
+		int ty = (c & 0xF0);
+
+		vertex* v0 = &v[i*2+0];
+		vertex* v1 = &v[i*2+1];
+
+		v0->s = (float)(tx + (fw ? ((16 - fw) >> 1) : ((16 - fontwidthtab[c]) >> 1)));
+		v0->t = (float)(ty);
+		v0->c = color;
+		v0->x = (float)(x);
+		v0->y = (float)(y);
+		v0->z = 0.0f;
+
+		v1->s = (float)(tx + 16 - (fw ? ((16 - fw) >> 1) : ((16 - fontwidthtab[c]) >> 1)));
+		v1->t = (float)(ty + 16);
+		v1->c = color;
+		v1->x = (float)(x + (fw ? fw : fontwidthtab[c]));
+		v1->y = (float)(y + 16);
+		v1->z = 0.0f;
+
+		x += (fw ? fw : fontwidthtab[c]);
+	}
+   	sceGuDrawArray(GU_SPRITES, GU_TEXTURE_32BITF | GU_COLOR_8888 | GU_VERTEX_32BITF | GU_TRANSFORM_2D, len * 2, 0, v);
+
+	sceGuShadeModel(GU_SMOOTH ); //gu_flat
+
+	sceGuDepthMask(GU_FALSE);
+	sceGuTexFunc(GU_TFX_REPLACE, GU_TCC_RGBA);
+}
 
 /*
 =============
@@ -614,8 +887,16 @@ static void Draw_AlphaPic (int x, int y, qpic_t *pic, float alpha)
 	vertices[0].z		= 0;
 
 	const gltexture_t& glt = gltextures[gl->index];
-	vertices[1].u		= glt.original_width;
-	vertices[1].v		= glt.original_height;
+	if (gltextures[gl->index].islmp)
+	{
+		vertices[1].u	= glt.original_width;
+		vertices[1].v	= glt.original_height;
+	}
+	else
+	{
+		vertices[1].u 	= glt.width;
+		vertices[1].v 	= glt.height;
+	}
 	vertices[1].x		= x + pic->width;
 	vertices[1].y		= y + pic->height;
 	vertices[1].z		= 0;
@@ -816,10 +1097,119 @@ void Draw_Fill (int x, int y, int w, int h, int c)
 	vertices[1].z = 0;
 
 	sceGuDisable(GU_TEXTURE_2D);
-	sceGuColor(GU_RGBA(host_basepal[c*3], host_basepal[c*3+1], host_basepal[c*3+2], 0xff));
+	sceGuColor(c);
 	sceGuDrawArray(GU_SPRITES, GU_VERTEX_16BIT | GU_TRANSFORM_2D, 2, 0, vertices);
 	sceGuColor(0xffffffff);
 	sceGuEnable(GU_TEXTURE_2D);
+}
+byte *StringToRGB (char *s)
+{
+	byte		*col;
+	static	byte	rgb[4];
+
+	Cmd_TokenizeString (s);
+	if (Cmd_Argc() == 3)
+	{
+		rgb[0] = (byte)Q_atoi(Cmd_Argv(0));
+		rgb[1] = (byte)Q_atoi(Cmd_Argv(1));
+		rgb[2] = (byte)Q_atoi(Cmd_Argv(2));
+	}
+	else
+	{
+		col = (byte *)&d_8to24table[(byte)Q_atoi(s)];
+		rgb[0] = col[0];
+		rgb[1] = col[1];
+		rgb[2] = col[2];
+	}
+	rgb[3] = 255;
+
+	return rgb;
+}
+
+extern "C"	cvar_t	crosshair, cl_crossx, cl_crossy;
+
+cvar_t	crosshairalpha	= {"crosshairalpha", "1", qtrue};
+cvar_t	crosshairsize	= {"crosshairsize",  "2",   qtrue};
+cvar_t	crosshaircolor	= {"crosshaircolor", "79",  qtrue};
+
+/*
+================
+Draw_Crosshair
+================
+*/
+void Draw_Crosshair (void)
+{
+	float		x, y, ofs1, ofs2, sh, th, sl, tl;
+	byte		*col;
+	extern vrect_t	scr_vrect;
+	unsigned int c,a;
+
+	if ((crosshair.value >= 2 && crosshair.value <= NUMCROSSHAIRS + 1) ||
+		((customcrosshair_loaded & CROSSHAIR_TXT) && crosshair.value == 1) ||
+		(customcrosshair_loaded & CROSSHAIR_IMAGE)
+	) {
+		x = scr_vrect.x + scr_vrect.width / 2 + cl_crossx.value;
+		y = scr_vrect.y + scr_vrect.height / 2 + cl_crossy.value;
+
+		if (!crosshairalpha.value)
+			return;
+
+		sceGuTexFunc(GU_TFX_MODULATE , GU_TCC_RGBA);
+
+		//col = StringToRGB (crosshaircolor.string);
+		c = crosshaircolor.value;
+		if (crosshairalpha.value)
+		{
+			a = bound(0, crosshairalpha.value, 1) * 255;
+			sceGuColor(GU_RGBA(host_basepal[c*3], host_basepal[c*3+1], host_basepal[c*3+2], a));
+		}
+		else
+		{
+			sceGuColor(GU_RGBA(host_basepal[c*3], host_basepal[c*3+1], host_basepal[c*3+2], 0xff));
+		}
+
+		GL_Bind ((crosshair.value >= 2) ? crosshairtextures[(int) crosshair.value - 2] : crosshairtexture_txt);
+        const gltexture_t& glt = gltextures[(crosshair.value >= 2) ? crosshairtextures[(int) crosshair.value - 2] : crosshairtexture_txt];
+
+		ofs1 = 3.5;
+		ofs2 = 4.5;
+		tl = sl = 0;
+		th = glt.width;
+		sh = glt.height;
+
+		ofs1 *= (vid.width / 320) * bound(0, crosshairsize.value, 20);
+		ofs2 *= (vid.width / 320) * bound(0, crosshairsize.value, 20);
+		
+		 struct vertex
+	     {
+		   short u, v;
+		   short x, y, z;
+	     };
+
+		 vertex* const vertices = static_cast<vertex*>(sceGuGetMemory(sizeof(vertex) * 2));
+
+	     vertices[0].u = tl;
+	     vertices[0].v = sl;
+	     vertices[0].x = x - ofs1;
+	     vertices[0].y = y - ofs1;
+	     vertices[0].z = 0;
+
+	     vertices[1].u = th;
+	     vertices[1].v = sh;
+	     vertices[1].x = x + ofs2;
+	     vertices[1].y = y + ofs2;
+	     vertices[1].z = 0;
+
+
+		sceGuDrawArray(GU_SPRITES, GU_TEXTURE_16BIT | GU_VERTEX_16BIT | GU_TRANSFORM_2D, 2, 0, vertices);
+
+        sceGuTexFunc(GU_TFX_REPLACE , GU_TCC_RGBA);
+		sceGuColor(0xffffffff);
+	}
+	else if (crosshair.value)
+	{
+		Draw_Character (scr_vrect.x + scr_vrect.width / 2 - 4 + cl_crossx.value, scr_vrect.y + scr_vrect.height / 2 - 4 + cl_crossy.value, '+');
+	}
 }
 //=============================================================================
 

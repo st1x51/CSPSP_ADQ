@@ -706,6 +706,9 @@ static void Mod_ParseWadsFromEntityLump(char *data)
 			return; // error
 
 		Q_strncpyz(value, com_token, sizeof(value));
+		
+		if (!strcmp("MaxRange", key))
+            Cvar_Set("r_maxrange", value);
 
 		if (!strcmp("wad", key))
 		{
@@ -1042,6 +1045,7 @@ void Mod_LoadFaces (lump_t *l)
 #ifndef QUAKE2
 			GL_SubdivideSurface (out);	// cut up polygon for warps
 #endif
+  			GL_Surface (out);	// Don't cut up polygon for warps
 			continue;
 		}
 		
@@ -1053,7 +1057,8 @@ void Mod_LoadFaces (lump_t *l)
 				out->extents[i] = 16384;
 				out->texturemins[i] = -8192;
 			}
-			GL_SubdivideSurface (out);	// cut up polygon for warps
+            GL_Surface (out);	// Don't cut up polygon for warps
+          //GL_SubdivideSurface (out);	// cut up polygon for warps
 			continue;
 		}
 

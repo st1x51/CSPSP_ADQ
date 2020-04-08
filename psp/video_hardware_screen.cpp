@@ -367,6 +367,7 @@ void SCR_SizeDown_f (void)
 }
 
 //============================================================================
+extern cvar_t crosshairalpha, crosshairsize, crosshaircolor;
 
 /*
 ==================
@@ -385,6 +386,9 @@ void SCR_Init (void)
 	Cvar_RegisterVariable (&scr_centertime);
 	Cvar_RegisterVariable (&scr_printspeed);
 	Cvar_RegisterVariable (&r_dithering);
+	Cvar_RegisterVariable (&crosshairalpha);
+    Cvar_RegisterVariable (&crosshairsize);
+	Cvar_RegisterVariable (&crosshaircolor);
 	Cvar_RegisterVariable (&buyicon);
 
 //
@@ -792,6 +796,8 @@ void SCR_TileClear (void)
 	}
 }
 
+void Draw_Crosshair (void);
+
 /*
 ==================
 SCR_UpdateScreen
@@ -885,14 +891,16 @@ void SCR_UpdateScreen (void)
 	}
 	else
 	{
-		if (crosshair.value)
-			Draw_Character (scr_vrect.x + scr_vrect.width/2 - 4, scr_vrect.y + scr_vrect.height/2 - 4, '+');
+		//if (crosshair.value)
+		//	Draw_Character (scr_vrect.x + scr_vrect.width/2 - 4, scr_vrect.y + scr_vrect.height/2 - 4, '+');
 		if (buyicon.value == 1)
 			showimgpart (450, 50, 96, 150, 30, 30, hudpic, 1,GU_RGBA(62, 251, 34, 255));  
-		SCR_DrawRam ();
-		SCR_DrawNet ();
-		SCR_DrawTurtle ();
-		SCR_DrawPause ();
+		if(cl.stats[STAT_ACTIVEWEAPON] != IT_AWP)
+			Draw_Crosshair ();
+		//SCR_DrawRam ();
+		//SCR_DrawNet ();
+		//SCR_DrawTurtle ();
+		//SCR_DrawPause ();
 		SCR_CheckDrawCenterString ();
 		Hud_Draw ();
 		SCR_DrawConsole ();	

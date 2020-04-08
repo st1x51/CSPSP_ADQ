@@ -30,6 +30,9 @@ extern"C"
 #include <pspgu.h>
 #include <pspgum.h>
 #include <list>
+#ifdef PSP_VFPU
+#include <pspmath.h>
+#endif
 using namespace std;
 extern list<int> mapTextureNameList;
 
@@ -547,8 +550,8 @@ void VectorIRotate (const vec3_t in1, const float in2[3][4], vec3_t out)
 void SetupLighting ( hlmodel_t *model )
 {
 	int i;
-	ambientlight = 128;
-	shadelight = 33;
+	ambientlight = 190;
+	shadelight = 12;
 
 	g_lightvec[0] = shadevector[0];
 	g_lightvec[1] = shadevector[1];
@@ -694,8 +697,8 @@ void R_DrawHLModel(entity_t	*curent)
 
     float an;
 	an = curent->angles[1]/180*M_PI;
-	shadevector[0] = cosf(-an);
-	shadevector[1] = sinf(-an);
+	shadevector[0] = vfpu_cosf(-an);
+	shadevector[1] = vfpu_sinf(-an);
 	shadevector[2] = 1;
 	VectorNormalize (shadevector);
 
@@ -720,7 +723,7 @@ void R_DrawHLModel(entity_t	*curent)
         byte				*nbone = ((byte *) model.header + amodel->norminfoindex);
         vec3_t				*verts = (vec3_t *) ((byte *) model.header + amodel->vertindex);
         vec3_t				*norms = (vec3_t *) ((byte *) model.header + amodel->normindex);
-        vec3_t				transformed[2048];
+        vec3_t				transformed[MAXSTUDIOVERTS];
         /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 
@@ -746,9 +749,9 @@ void R_DrawHLModel(entity_t	*curent)
 				if (flags & STUDIO_NF_CHROME)
 				 	Chrome(g_chrome[(float (*)[3])lv - g_pvlightvalues], *nbone, (float *)norms );
 
-			    lv[0] = lv_tmp * g_lightcolor[0];
-			    lv[1] = lv_tmp * g_lightcolor[1];
-			    lv[2] = lv_tmp * g_lightcolor[2];
+			    lv[0] = /*lv_tmp * */g_lightcolor[0];
+			    lv[1] = /*lv_tmp *  */g_lightcolor[1];
+			    lv[2] = /*lv_tmp *  */g_lightcolor[2];
 			}
 
 			if (model.textures[skins[mesh->skinindex]].flags & STUDIO_NF_CHROME)

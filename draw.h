@@ -40,3 +40,4 @@ void Draw_String (int x, int y, char *str);
 void showimgpart (int x, int y, int px, int py, int w, int h, int texnum, int mode,unsigned int c);
 qpic_t *Draw_PicFromWad (char *name);
 qpic_t *Draw_CachePic (char *path);
+void Draw_FrontText(char* text, int x, int y, unsigned int color, int fw);

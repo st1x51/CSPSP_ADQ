@@ -130,6 +130,7 @@ void ED_Free (edict_t *ed)
 	ed->v.colormap = 0;
 	ed->v.skin = 0;
 	ed->v.frame = 0;
+	ed->v.sequence = 0;
 //New vars
 	ed->v.renderamt = 0;
 	ed->v.rendermode = 0;
@@ -998,9 +999,9 @@ void PR_LoadProgs (void)
 
 	CRC_Init (&pr_crc);
 
-	progs = (dprograms_t *)COM_LoadHunkFile ("progs.dat");
+	progs = (dprograms_t *)COM_LoadHunkFile ("server.so");
 	if (!progs)
-		Sys_Error ("PR_LoadProgs: couldn't load progs.dat");
+		Sys_Error ("Couldn't load server.so");
 	Con_DPrintf ("Programs occupy %iK.\n", com_filesize/1024);
 
 	for (i=0 ; i<com_filesize ; i++)

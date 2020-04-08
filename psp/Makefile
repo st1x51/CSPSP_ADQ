@@ -12,7 +12,7 @@ endif
 PSPLIBSDIR		= $(PSPSDK)/..
 
 # Project specific variables.
-VERSION		= 3_WIP
+VERSION		= 0.7
 SRC_DIR		= ..
 OBJ_DIR		= obj
 TARGET		= $(OBJ_DIR)/Quake
@@ -114,11 +114,11 @@ VIDEO_FLAGS = -DPSP_HARDWARE_VIDEO
 OBJS	= $(VIDEO_OBJS) $(COMMON_OBJS) $(GPROF_OBJS)
 
 # Compiler flags.
-CFLAGS	= -ffast-math -O3 -G0 $(GPROF_FLAGS) -Wall -Wno-trigraphs -Winline -DFPS_20 -DPSP $(VIDEO_FLAGS) -g
+CFLAGS	= -ffast-math -O3 -G0 $(GPROF_FLAGS) -Wall -Wno-trigraphs -Winline -DPSP_VFPU -DPSP $(VIDEO_FLAGS) -g
 
 # Libs.
 IMG_LIBS    = -ljpeg -lpng -lz
-GU_LIBS	    = -lpspvram -lpspgum_vfpu -lpspvfpu -lpspgu
+GU_LIBS	    = -lpspvram -lpspgum_vfpu -lpspvfpu -lpspgu -lpspmath
 AUDIO_LIBS	= -lpspaudiolib -lpspaudio -lpspmp3
 MISC_LIBS	= -lpsprtc -lpsppower
 STD_LIBS	= -lstdc++ -lm -lc

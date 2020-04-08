@@ -195,6 +195,7 @@ extern  cvar_t  r_i_model_transform;
 extern  cvar_t  r_ipolations;
 extern  cvar_t  r_asynch;
 extern  cvar_t  r_showtris;
+extern	cvar_t  r_maxrange;
 extern	cvar_t	gl_keeptjunctions;
 
 extern	int			mirrortexturenum;	// quake texturenum, not gltexturenum
@@ -222,6 +223,8 @@ void GL_BuildLightmaps (void);
 void GL_MakeAliasModelDisplayLists (model_t *m, aliashdr_t *hdr);
 void GL_Set2D (void);
 void GL_SubdivideSurface (msurface_t *fa);
+void GL_Surface (msurface_t *fa);
+
 void EmitWaterPolys (msurface_t *fa);
 void EmitSkyPolys (msurface_t *fa);
 void EmitBothSkyLayers (msurface_t *fa);

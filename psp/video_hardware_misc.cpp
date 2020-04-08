@@ -228,6 +228,8 @@ void R_Init (void)
 	Cvar_RegisterVariable (&r_ipolations);
 	Cvar_RegisterVariable (&r_asynch);
 	Cvar_RegisterVariable (&gl_keeptjunctions);
+	Cvar_RegisterVariable (&r_maxrange);
+
 /*
 	Cvar_RegisterVariable (&gl_finish);
 	Cvar_RegisterVariable (&gl_clear);

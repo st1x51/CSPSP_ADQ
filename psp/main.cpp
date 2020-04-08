@@ -472,7 +472,7 @@ int user_main(SceSize argc, void* argp)
 	
 	char   path_f[256];
 	strcpy(path_f,currentDirectory);
-	strcat(path_f,"/quake.cmdline");
+	strcat(path_f,"/engine.ini");
 	Sys_ReadCommandLineFile(path_f);
 	
 	char *args[MAX_NUM_ARGVS];

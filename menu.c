@@ -29,7 +29,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <psputility.h>
 #include "net_dgrm.h"
 #include <pspwlan.h>
-
+#include <pspgu.h>
 extern cvar_t	accesspoint;
 extern cvar_t	r_wateralpha;
 extern cvar_t	r_vsync;
@@ -65,7 +65,7 @@ extern cvar_t	qmb_particles;
 #ifdef PSP_MP3_HWDECODE
 extern int changeMp3Volume;
 #endif
-
+#define button_width 180
 extern qboolean bmg_type_changed;
 
 cvar_t	scr_centermenu = {"scr_centermenu", "1"};
@@ -92,9 +92,6 @@ void M_Menu_Main_f (void);
 	void M_Menu_SinglePlayer_f (void);
      void M_Menu_Buyt_f (void);
      void M_Menu_Buyct_f (void);
-     void M_Menu_Chat_f (void); 
-     void M_Menu_Ingame_f (void);
-     void M_Menu_Orders_f (void);
      void M_Menu_Pistolst_f (void);
      void M_Menu_Smgst_f (void);
      void M_Menu_Riflest_f (void);
@@ -106,7 +103,6 @@ void M_Menu_Main_f (void);
      void M_Menu_Equipment_f (void);
      void M_Menu_Team_f (void);
      void M_Menu_Counter_f (void);
-     void M_Menu_Taunts_f (void);
      void M_Menu_Server_f (void);
      void M_Menu_Terror_f (void);
 void M_Menu_Networks_f (void);
@@ -130,12 +126,9 @@ void M_Main_Draw (void);
 	void M_SinglePlayer_Draw (void);
      void M_Buyt_Draw (void);
      void M_Buyct_Draw (void);
-      void M_Chat_Draw (void);
-      void M_Orders_Draw (void); 
      void M_Ingame_Draw (void);
      void M__Pistolst_Draw (void);
      void M__Pistolsct_Draw (void);
-     void M__Taunts_Draw (void);
      void M_Smgst_Draw (void);
      void M_Smgsct_Draw (void);
      void M_Server_Draw (void);
@@ -171,9 +164,6 @@ void M_Main_Key (int key);
 	void M_SinglePlayer_Key (int key);
     void M_Buyt_Key (int key);
     void M_Buyct_Key (int key);
-      void M_Chat_Key (int key);
-      void M_Ingame_Key (int key);
-      void M_Orders_Key (int key);
      void M_Pistolst_Key (int key);
      void M_Smgst_Key (int key);
      void M_Riflest_Key (int key);
@@ -182,7 +172,6 @@ void M_Main_Key (int key);
      void M_Riflesct_Key (int key);
      void M_Team_Key (int key);
      void M_Counter_Key (int key);
-     void M_Taunts_Key (int key);
      void M_Terror_Key (int key);
      void M_Server_Key (int key);
      void M_Shotguns_Key (int key);
@@ -237,19 +226,25 @@ Draws one solid graphics character
 */
 void M_DrawCharacter (int cx, int line, int num)
 {
-	Draw_Character ( cx + ((vid.width - 320)>>1), line, num);
+	//Draw_Character ( cx + ((vid.width - 320)>>1), line, num);
+	Draw_Character ( cx, line, num);
 }
 
 void M_Print (int cx, int cy, char *str)
 {
+	
 	while (*str)
 	{
 		M_DrawCharacter (cx, cy, (*str)+128);
 		str++;
 		cx += 8;
 	}
+	
 }
-
+void qgui_print (int cx, int cy, char *str)
+{
+	Draw_FrontText(str,cx,cy-4, GU_RGBA(255, 255, 255, 200) , 10);
+}
 void M_PrintWhite (int cx, int cy, char *str)
 {
 	while (*str)
@@ -262,12 +257,12 @@ void M_PrintWhite (int cx, int cy, char *str)
 
 void M_DrawTransPic (int x, int y, qpic_t *pic)
 {
-	Draw_TransPic (x + ((vid.width - 320)>>1), y, pic);
+	Draw_TransPic (x, y, pic);
 }
 
 void M_DrawPic (int x, int y, qpic_t *pic)
 {
-	Draw_Pic (x + ((vid.width - 320)>>1), y, pic);
+	Draw_Pic (x , y, pic);
 }
 
 byte identityTable[256];
@@ -452,36 +447,36 @@ void M_Main_Draw (void)
 {
 	int		f;
 	qpic_t	*p, *background;
-	background = Draw_CachePic ("gfx/conback.lmp");
-    M_DrawPic ((320-background->width)/2, 0, background);;
-    M_PrintWhite(-50,200,"New Game");
+	background = Draw_CachePic ("gfx/conback.tga");
+    M_DrawPic (0, 0, background);;
+    M_PrintWhite(10,200,"New Game");
 	if(sv.active)
-		M_PrintWhite(-50,210,"Bots");
+		M_PrintWhite(10,210,"Bots");
 	else
-		M_PrintWhite(-50,210,"Multiplayer game");
-	M_PrintWhite(-50,220,"Options");
-	M_PrintWhite(-50,230,"Credits");
-	M_PrintWhite(-50,240,"Exit");
+		M_PrintWhite(10,210,"Multiplayer game");
+	M_PrintWhite(10,220,"Options");
+	M_PrintWhite(10,230,"Credits");
+	M_PrintWhite(10,240,"Exit");
 	
 	switch(m_main_cursor)
 	{
 		case 0:
-		M_Print(-50,200,"New Game");
+		M_Print(10,200,"New Game");
 		break;
 		case 1:
 		if(sv.active)
-			M_Print(-50,210,"Bots");
+			M_Print(10,210,"Bots");
 		else
-			M_Print(-50,210,"Multiplayer game");
+			M_Print(10,210,"Multiplayer game");
 		break;
 		case 2:
-		M_Print(-50,220,"Options");
+		M_Print(10,220,"Options");
 		break;
 		case 3:
-		M_Print(-50,230,"Credits");
+		M_Print(10,230,"Credits");
 		break;
 		case 4:
-		M_Print(-50,240,"Exit");
+		M_Print(10,240,"Exit");
 		break;
 	}
 	
@@ -613,86 +608,6 @@ void M_SinglePlayer_Key (int key)
 	}
 }
 
-
-
-//=============================================================================
-/* IN Game Menu */
-
-int	m_ingame_cursor;
-#define	INGAME_ITEMS	3
-
-
-void M_Menu_Ingame_f (void)
-{
-
-	if (key_dest != key_menu)
-	{
-		m_save_demonum = cls.demonum;
-		cls.demonum = -1;
-	}
-	key_dest = key_menu;
-	m_state = m_ingame;
-	m_entersound = true;
-}
-
-
-void M_Ingame_Draw (void)
-{
-	int		f;
-	qpic_t	*p;
-      int team;
-
-
-M_DrawTransPic (0, 60, Draw_CachePic ("gfx/menu/mainmenu.lmp") );
-
-M_DrawTransPic (-40, 60 + m_ingame_cursor * 38,Draw_CachePic( va("gfx/menudot.lmp") ) );
-
-}
-
-
-void M_Ingame_Key (int key)
-{
-	switch (key)
-	{
-	case K_ESCAPE:
-		key_dest = key_game;
-		m_state = m_none;
-		cls.demonum = m_save_demonum;
-		if (cls.demonum != -1 && !cls.demoplayback && cls.state != ca_connected)
-			CL_NextDemo ();
-		break;
-
-	case K_DOWNARROW:
-		S_LocalSound ("misc/menu1.wav");
-		if (++m_ingame_cursor >= INGAME_ITEMS)
-			m_ingame_cursor = 0;
-		break;
-
-	case K_UPARROW:
-		S_LocalSound ("misc/menu1.wav");
-		if (--m_ingame_cursor < 0)
-			m_ingame_cursor = INGAME_ITEMS - 1;
-		break;
-
-	case K_ENTER:
-		m_entersound = true;
-
-		switch (m_ingame_cursor)
-		{
-		case 0:
-			Cbuf_AddText ("impulse 105\n");
-			break;
-
-		case 1:
-			M_Menu_Chat_f ();
-			break;
-
-		case 2:
-			M_Menu_Team_f ();
-			break;
-		}
-	}
-}
 //=============================================================================
 /* Bots MENU */
 
@@ -854,12 +769,16 @@ void M_Buyct_Key (int key)
 		}
 	}
 }
-
+void qgui_button(int x,int y,int w,int h)
+{
+	Draw_Fill (x, y, w,h, GU_RGBA(255, 215, 0, 100));
+	Draw_Fill (x+1, y+1, w-2 ,h-2, GU_RGBA(1, 1, 1, 255));	
+}
 //=============================================================================
 /* In Game Buy Menu Buy Terrorist */
 
 int	m_buyt_cursor;
-#define	BUYT_ITEMS	6
+#define	BUYT_ITEMS	8
 
 
 
@@ -873,11 +792,36 @@ void M_Menu_Buyt_f (void)
 
 void M_Buyt_Draw (void)
 {
-	int		f;
-	qpic_t	*p;
+	//logo menu
+	Draw_Fill (10,10, 460, 32, GU_RGBA(1, 1, 1, 150));
+	M_DrawPic (10, 10, Draw_CachePic ("gfx/vgui/CS_logo.tga") );
+	Draw_Fill (10,45, 460, 222, GU_RGBA(1, 1, 1, 150));
+	qgui_print(40, 21, "Buy menu");
+	
+	qgui_button(20, 50, 160,16);
+	qgui_print(22, 54, "Pistols");
+	
+	qgui_button(20, 70, 160,16);
+	qgui_print(22, 74, "Shotguns");
 
-M_DrawTransPic (0, 20, Draw_CachePic ("gfx/menu/buymenu.lmp") );
-M_DrawTransPic (-40, 20 + m_buyt_cursor * 38,Draw_CachePic( va("gfx/menudot.lmp") ) );
+	qgui_button(20, 90, 160,16);
+	qgui_print(22, 94, "Sub-Machine Guns");
+
+	qgui_button(20, 110, 160,16);
+	qgui_print(22, 114, "Rifles");		
+	
+	qgui_button(20, 130, 160,16);
+	qgui_print(22, 134, "Machine Guns");	
+	
+	qgui_button(20, 150, 160,16);
+	qgui_print(22, 154, "Primary Ammo");	
+	
+	qgui_button(20, 170, 160,16);
+	qgui_print(22, 174, "Secondary Ammo");	
+	
+	qgui_button(20, 190, 160,16);
+	qgui_print(22, 194, "Equipments");	
+	M_DrawTransPic (0, 45 + m_buyt_cursor * 20,Draw_CachePic( va("gfx/menudot.lmp") ) );
 }
 
 
@@ -928,8 +872,13 @@ void M_Buyt_Key (int key)
 		case 4:
 			M_Menu_Machineguns_f ();
 			break;
-
 		case 5:
+			Cbuf_AddText ("impulse 83\n"); 
+			break;
+		case 6:
+			Cbuf_AddText ("impulse 84\n"); 
+			break;
+		case 7:
 			M_Menu_Equipment_f ();
 			break;
 
@@ -958,23 +907,53 @@ void M_Menu_Pistolst_f (void)
 
 void M_Pistolst_Draw (void)
 {
-	int		f;
-	qpic_t	*p;
+	Draw_Fill (10,10, 460, 32, GU_RGBA(1, 1, 1, 150));
+	M_DrawPic (10, 10, Draw_CachePic ("gfx/vgui/CS_logo.tga") );
+	Draw_Fill (10,45, 460, 222, GU_RGBA(1, 1, 1, 150));
+	qgui_print(40, 21, "Buy menu");
+	
+	qgui_button(20, 50, 160,16);
+	qgui_print(22, 54, "Glock");
+	
+	qgui_button(20, 70, 160,16);
+	qgui_print(22, 74, "USP");
 
-M_DrawTransPic (76, 0, Draw_CachePic ("gfx/pistols.lmp") );
+	qgui_button(20, 90, 160,16);
+	qgui_print(22, 94, "Deagle");
 
-
-
-    M_DrawTransPic (76, 40, Draw_CachePic ("gfx/buy/w_glock.lmp") );
-    M_DrawTransPic (76, 78, Draw_CachePic ("gfx/buy/w_usp.lmp") );
-    M_DrawTransPic (76, 116, Draw_CachePic ("gfx/buy/w_deagle.lmp") );
-    M_DrawTransPic (76, 154, Draw_CachePic ("gfx/buy/w_p228.lmp") );
-    M_DrawTransPic (76, 192, Draw_CachePic ("gfx/buy/w_elite.lmp") );
-
-
-
-M_DrawTransPic (54, 40 + m_pistolst_cursor * 38,Draw_CachePic( va("gfx/menudot.lmp") ) );
-
+	qgui_button(20, 110, 160,16);
+	qgui_print(22, 114, "P228");		
+	
+	qgui_button(20, 130, 160,16);
+	qgui_print(22, 134, "Elites");	
+	M_DrawTransPic (0, 45 + m_pistolst_cursor * 20,Draw_CachePic( va("gfx/menudot.lmp") ) );
+	switch(m_pistolst_cursor)
+	{
+		case 0:
+			M_DrawTransPic (200, 30 ,Draw_CachePic( va("gfx/vgui/glock18.tga") ) );
+			qgui_print(250, 21, "Price: 400$");
+		break;
+		
+		case 1:
+			M_DrawTransPic (200, 30 ,Draw_CachePic( va("gfx/vgui/usp45.tga") ) );
+			qgui_print(250, 21, "Price: 500$");
+		break;
+		
+		case 2:
+			M_DrawTransPic (200, 30 ,Draw_CachePic( va("gfx/vgui/deserteagle.tga") ) );
+			qgui_print(250, 21, "Price: 650$");
+		break;
+		
+		case 3:
+			M_DrawTransPic (200, 30 ,Draw_CachePic( va("gfx/vgui/p228.tga") ) );
+			qgui_print(250, 21, "Price: 600$");
+		break;
+		
+		case 4:
+			M_DrawTransPic (200, 30 ,Draw_CachePic( va("gfx/vgui/elites.tga") ) );
+			qgui_print(250, 21, "Price: 800$");
+		break;
+	}
 }
 
 
@@ -1285,7 +1264,7 @@ void M_Equipment_Key (int key)
 /* SubMachineGun MENU  Terrorist*/
 
 int m_smgst_cursor;
-#define    SMGST_ITEMS 3
+#define    SMGST_ITEMS 4
 
 void M_Menu_Smgst_f (void)
 {
@@ -1302,23 +1281,47 @@ void M_Menu_Smgst_f (void)
 
 void M_Smgst_Draw (void)
 {
-	int		f;
-	qpic_t	*p;
+	Draw_Fill (10,10, 460, 32, GU_RGBA(1, 1, 1, 150));
+	M_DrawPic (10, 10, Draw_CachePic ("gfx/vgui/CS_logo.tga") );
+	Draw_Fill (10,45, 460, 222, GU_RGBA(1, 1, 1, 150));
+	qgui_print(40, 21, "Buy menu");
+	
+	qgui_button(20, 50, 160,16);
+	qgui_print(22, 54, "MAC10");
+	
+	qgui_button(20, 70, 160,16);
+	qgui_print(22, 74, "MP5");
 
+	qgui_button(20, 90, 160,16);
+	qgui_print(22, 94, "UMP45");
 
-
-  M_DrawTransPic (76, 0, Draw_CachePic ("gfx/smg.lmp") );
-
-
-    M_DrawTransPic (76, 40, Draw_CachePic ("gfx/buy/w_mp5.lmp") );
-    M_DrawTransPic (76, 78, Draw_CachePic ("gfx/buy/w_p90.lmp") );
-    M_DrawTransPic (76, 116, Draw_CachePic ("gfx/buy/w_mac10.lmp") );
-
-
-M_DrawTransPic (54, 40 + m_smgst_cursor * 38,Draw_CachePic( va("gfx/menudot.lmp") ) );
-
+	qgui_button(20, 110, 160,16);
+	qgui_print(22, 114, "P90");		
+	
+	M_DrawTransPic (0, 45 + m_smgst_cursor * 20,Draw_CachePic( va("gfx/menudot.lmp") ) );
+	switch(m_smgst_cursor)
+	{
+		case 0:
+			M_DrawTransPic (200, 40 ,Draw_CachePic( va("gfx/vgui/mac10.tga") ) );
+			qgui_print(250, 21, "Price: 1250$");
+		break;
+		
+		case 1:
+			M_DrawTransPic (200, 40 ,Draw_CachePic( va("gfx/vgui/mp5.tga") ) );
+			qgui_print(250, 21, "Price: 1500$");
+		break;
+		
+		case 2:
+			M_DrawTransPic (200, 40 ,Draw_CachePic( va("gfx/vgui/ump45.tga") ) );
+			qgui_print(250, 21, "Price: 1700$");
+		break;
+		
+		case 3:
+			M_DrawTransPic (200, 40 ,Draw_CachePic( va("gfx/vgui/p90.tga") ) );
+			qgui_print(250, 21, "Price: 2350$");
+		break;
+	}
 }
-
 
 void M_Smgst_Key (int key)
 {
@@ -1351,14 +1354,17 @@ void M_Smgst_Key (int key)
 		switch (m_smgst_cursor)
 		{
 		case 0:
-		Cbuf_AddText ("impulse 42\n"); 
-				break;
+		Cbuf_AddText ("impulse 42\n"); //mac10
+		break;
 		case 1:
-		Cbuf_AddText ("impulse 65\n"); 
-				break;
+		Cbuf_AddText ("impulse 65\n"); //mp5
+		break;
 		case 2:
-		Cbuf_AddText ("impulse 88\n"); 
-				break;
+		Cbuf_AddText ("impulse 87\n"); //ump
+		break;
+		case 3:
+		Cbuf_AddText ("impulse 88\n"); //p90
+		break;		
 
 		}
 	}
@@ -1449,7 +1455,7 @@ void M_Smgsct_Key (int key)
 /* Rifles MENU Terrorist */
 
 int m_riflest_cursor;
-#define    RIFLEST_ITEMS 4
+#define    RIFLEST_ITEMS 6
 
 void M_Menu_Riflest_f (void)
 {
@@ -1463,31 +1469,91 @@ void M_Menu_Riflest_f (void)
 	m_state = m_riflest;
 	m_entersound = true;
 }
-
+/*
+	AK47_PRICE      = 2500,
+	AWP_PRICE       = 4750,
+	DEAGLE_PRICE    = 650,
+	G3SG1_PRICE     = 5000,
+	SG550_PRICE     = 4200,
+	GLOCK18_PRICE   = 400,
+	M249_PRICE      = 5750,
+	M3_PRICE        = 1700,
+	M4A1_PRICE      = 3100,
+	AUG_PRICE       = 3500,
+	MP5NAVY_PRICE   = 1500,
+	P228_PRICE      = 600,
+	P90_PRICE       = 2350,
+	UMP45_PRICE     = 1700,
+	MAC10_PRICE     = 1400,
+	SCOUT_PRICE     = 2750,
+	SG552_PRICE     = 3500,
+	TMP_PRICE       = 1250,
+	USP_PRICE       = 500,
+	ELITE_PRICE     = 800,
+	FIVESEVEN_PRICE = 750,
+	XM1014_PRICE    = 3000,
+	GALIL_PRICE     = 2000,
+	FAMAS_PRICE     = 2250,
+	SHIELDGUN_PRICE = 2200,
+*/
 void M_Riflest_Draw (void)
 {
-	int		f;
-	qpic_t	*p;
+	Draw_Fill (10,10, 460, 32, GU_RGBA(1, 1, 1, 150));
+	M_DrawPic (10, 10, Draw_CachePic ("gfx/vgui/CS_logo.tga") );
+	Draw_Fill (10,45, 460, 222, GU_RGBA(1, 1, 1, 150));
+	qgui_print(40, 21, "Buy menu");
+	
+	qgui_button(20, 50, 160,16);
+	qgui_print(22, 54, "Galil");
+	
+	qgui_button(20, 70, 160,16);
+	qgui_print(22, 74, "AK47");
 
+	qgui_button(20, 90, 160,16);
+	qgui_print(22, 94, "SG552");
 
-
-M_DrawTransPic (76, 0, Draw_CachePic ("gfx/rifle.lmp") );
-
-//Imi Gallil 
-//AK-47 
-//SG-552 
-//Scout 
-//AWP 
-//SG-1
-
-    M_DrawTransPic (76, 40, Draw_CachePic ("gfx/buy/w_galil.lmp") );
-    M_DrawTransPic (76, 78, Draw_CachePic ("gfx/buy/w_ak47.lmp") );
-    M_DrawTransPic (76, 116, Draw_CachePic ("gfx/buy/w_awp.lmp") );
-    M_DrawTransPic (76, 154, Draw_CachePic ("gfx/buy/w_sg1.lmp") );
-
-M_DrawTransPic (54, 40 + m_riflest_cursor * 38,Draw_CachePic( va("gfx/menudot.lmp") ) );
-
-
+	qgui_button(20, 110, 160,16);
+	qgui_print(22, 114, "Scout");		
+	
+	qgui_button(20, 130, 160,16);
+	qgui_print(22, 134, "AWP");	
+	
+	qgui_button(20, 150, 160,16);
+	qgui_print(22, 154, "SG550");	
+	
+	M_DrawTransPic (0, 45 + m_riflest_cursor * 20,Draw_CachePic( va("gfx/menudot.lmp") ) );
+	switch(m_riflest_cursor)
+	{
+		case 0:
+			M_DrawTransPic (200, 50 ,Draw_CachePic( va("gfx/vgui/galil.tga") ) );
+			qgui_print(250, 21, "Price: 2000$");
+		break;
+		
+		case 1:
+			M_DrawTransPic (200, 50 ,Draw_CachePic( va("gfx/vgui/ak47.tga") ) );
+			qgui_print(250, 21, "Price: 2500$");
+		break;
+		
+		case 2:
+			M_DrawTransPic (200, 50 ,Draw_CachePic( va("gfx/vgui/sg552.tga") ) );
+			qgui_print(250, 21, "Price: 3500$");
+		break;
+		
+		case 3:
+			M_DrawTransPic (200, 50 ,Draw_CachePic( va("gfx/vgui/scout.tga") ) );
+			qgui_print(250, 21, "Price: 2750$");
+		break;
+		
+		case 4:
+			M_DrawTransPic (200, 50 ,Draw_CachePic( va("gfx/vgui/awp.tga") ) );
+			qgui_print(250, 21, "Price: 4750$");
+		break;
+		
+		case 5:
+			M_DrawTransPic (200, 50 ,Draw_CachePic( va("gfx/vgui/sg550.tga") ) );
+			qgui_print(250, 21, "Price: 3500$");
+		break;
+	}
 }
 
 
@@ -1521,21 +1587,29 @@ void M_Riflest_Key (int key)
 		m_state = m_none;
 		switch (m_riflest_cursor)
 		{
-		case 0:
-		Cbuf_AddText ("impulse 89\n"); 
-				break;
+			case 0:
+			Cbuf_AddText ("impulse 89\n"); //galil
+			break;
 
-		case 1:
-		Cbuf_AddText ("impulse 43\n"); 
-				break;
-
-		case 2:
-		Cbuf_AddText ("impulse 46\n"); 
-				break;
-		case 3:
-		Cbuf_AddText ("impulse 90\n"); 
-				break;
-
+			case 1:
+			Cbuf_AddText ("impulse 43\n"); //ak47
+			break;
+			
+			case 2:
+			Cbuf_AddText ("impulse 47\n");//sg552 
+			break;
+			
+			case 3:
+			Cbuf_AddText ("impulse 48\n");// scout
+			break;
+			
+			case 4:
+			Cbuf_AddText ("impulse 46\n");//awp 
+			break;
+			
+			case 5:
+			Cbuf_AddText ("impulse 49\n");//sg550 
+			break;
 		}
 	}
 }
@@ -1720,310 +1794,6 @@ void M_Shotguns_Key (int key)
 }
 
 //=============================================================================
-/* Ingame Chat MENU */
-
-int	m_chat_cursor;
-#define	CHAT_ITEMS	2
-
-
-void M_Menu_Chat_f (void)
-{
-
-	if (key_dest != key_menu)
-	{
-		m_save_demonum = cls.demonum;
-		cls.demonum = -1;
-	}
-	key_dest = key_menu;
-	m_state = m_chat;
-	m_entersound = true;
-}
-
-
-void M_Chat_Draw (void)
-{
-	int		f;
-	qpic_t	*p;
-
-
-
-M_DrawTransPic (76, 0, Draw_CachePic ("gfx/chat.lmp") );
-
-  M_PrintWhite (76, 39, "Orders");
-  M_PrintWhite (76, 59, "Quick Chat");
-
-M_DrawTransPic (54, 32 + m_chat_cursor * 20,Draw_CachePic( va("gfx/menudot.lmp") ) );
-
-}
-
-
-void M_Chat_Key (int key)
-{
-	switch (key)
-	{
-	case K_ESCAPE:
-		key_dest = key_game;
-		m_state = m_none;
-		cls.demonum = m_save_demonum;
-		if (cls.demonum != -1 && !cls.demoplayback && cls.state != ca_connected)
-			CL_NextDemo ();
-		break;
-
-	case K_DOWNARROW:
-		S_LocalSound ("misc/menu1.wav");
-		if (++m_chat_cursor >= CHAT_ITEMS)
-			m_chat_cursor = 0;
-		break;
-
-	case K_UPARROW:
-		S_LocalSound ("misc/menu1.wav");
-		if (--m_chat_cursor < 0)
-			m_chat_cursor = CHAT_ITEMS - 1;
-		break;
-
-	case K_ENTER:
-		m_entersound = true;
-
-		switch (m_chat_cursor)
-		{
-		case 0:
-			M_Menu_Orders_f ();
-			break;
-
-		case 1:
-			M_Menu_Taunts_f ();
-			break;
-
-
-		}
-	}
-}
-//=============================================================================
-/* Chat Menu Orders */
-
-int	m_orders_cursor;
-#define	ORDERS_ITEMS	10
-
-
-void M_Menu_Orders_f (void)
-{
-
-	if (key_dest != key_menu)
-	{
-		m_save_demonum = cls.demonum;
-		cls.demonum = -1;
-	}
-	key_dest = key_menu;
-	m_state = m_orders;
-	m_entersound = true;
-}
-
-
-void M_Orders_Draw (void)
-{
-	int		f;
-	qpic_t	*p;
-
-
-  M_PrintWhite (76, 11, "Orders");
-  M_PrintWhite (76, 39, "Go Go Go");
-  M_PrintWhite (76, 59, "Need Backup");
-  M_PrintWhite (76, 79, "Affirmativ");
-  M_PrintWhite (76, 99, "Cover Me");
-  M_PrintWhite (76, 119, "Roger That");
-  M_PrintWhite (76, 139,"Negative");
-  M_PrintWhite (76, 159,"Fire in the Hole");
-  M_PrintWhite (76, 179, "Hold this Position");
-  M_PrintWhite (76, 199,"Enemy Down");
-  M_PrintWhite (76, 219,"Enemy Spotted");
-
-M_DrawTransPic (54, 32 + m_orders_cursor * 20,Draw_CachePic( va("gfx/menudot.lmp") ) );
-
-}
-
-
-void M_Orders_Key (int key)
-{
-	switch (key)
-	{
-	case K_ESCAPE:
-		key_dest = key_game;
-		m_state = m_none;
-		cls.demonum = m_save_demonum;
-		if (cls.demonum != -1 && !cls.demoplayback && cls.state != ca_connected)
-			CL_NextDemo ();
-		break;
-
-	case K_DOWNARROW:
-		S_LocalSound ("misc/menu1.wav");
-		if (++m_orders_cursor >= ORDERS_ITEMS)
-			m_orders_cursor = 0;
-		break;
-
-	case K_UPARROW:
-		S_LocalSound ("misc/menu1.wav");
-		if (--m_orders_cursor < 0)
-			m_orders_cursor = ORDERS_ITEMS - 1;
-		break;
-
-	case K_ENTER:
-		m_entersound = true;
-
-		switch (m_orders_cursor)
-		{
-		case 0:
-			Cbuf_AddText ("say Follow me\n");
-                  Cbuf_AddText ("impulse 70\n");	
-		       break;
-		case 1:
-			Cbuf_AddText ("say I need Backup\n");
-                  Cbuf_AddText ("impulse 71");
-			break;
-
-		case 2:
-			Cbuf_AddText ("say Affirmativ\n");
-                  Cbuf_AddText ("impulse 72");
-          		break;
-
-		case 3:
-			Cbuf_AddText ("say Cover Me\n");
-                  Cbuf_AddText ("impulse 73");
-			break;
-		case 4:
-			Cbuf_AddText ("say Roger that\n");
-                  Cbuf_AddText ("impulse 80");
-			break;
-		case 5:
-			Cbuf_AddText ("say Negative\n");
-                  Cbuf_AddText ("impulse 78");
-			break;
-		case 6:
-			Cbuf_AddText ("say Fire in the Hole!!\n");
-                  Cbuf_AddText ("impulse 75");
-			break;
-		case 7:
-			Cbuf_AddText ("say Hold this Position\n");
-                  Cbuf_AddText ("impulse 79");
-			break;
-		case 8:
-			Cbuf_AddText ("say Enemy Down\n");
-                  Cbuf_AddText ("impulse 76");
-			break;
-		case 9:
-			Cbuf_AddText ("say Enemy Spotted\n");
-                  Cbuf_AddText ("impulse 74");
-			break;
-
-
-		}
-	}
-}
-
-//=============================================================================
-/* Quick Chat Menu Orders */
-
-int	m_taunts_cursor;
-#define	TAUNTS_ITEMS	7
-
-
-void M_Menu_Taunts_f (void)
-{
-
-	if (key_dest != key_menu)
-	{
-		m_save_demonum = cls.demonum;
-		cls.demonum = -1;
-	}
-	key_dest = key_menu;
-	m_state = m_taunts;
-	m_entersound = true;
-}
-
-
-void M_Taunts_Draw (void)
-{
-	int		f;
-	qpic_t	*p;
-int drawinput;
-
-
-  M_PrintWhite (76, 11, "Chat");
-  M_PrintWhite (76, 39, "Hello");
-  M_PrintWhite (76, 59, "Bye");
-  M_PrintWhite (76, 79, "******");
-  M_PrintWhite (76, 99, "Follow Me");
-  M_PrintWhite (76, 119, "NOOOOOB!!");
-
-
-Con_DrawNotify ();
-
-	if (drawinput)
-		Con_DrawInput ();
-		
-	Con_DrawOSK();	
-
-
-M_DrawTransPic (54, 32 + m_taunts_cursor * 20,Draw_CachePic( va("gfx/menudot.lmp") ) );
-
-}
-
-
-void M_Taunts_Key (int key)
-{
-	switch (key)
-	{
-	case K_ESCAPE:
-		key_dest = key_game;
-		m_state = m_none;
-		cls.demonum = m_save_demonum;
-		if (cls.demonum != -1 && !cls.demoplayback && cls.state != ca_connected)
-			CL_NextDemo ();
-		break;
-
-	case K_DOWNARROW:
-		S_LocalSound ("misc/menu1.wav");
-		if (++m_taunts_cursor >= TAUNTS_ITEMS)
-			m_taunts_cursor = 0;
-		break;
-
-	case K_UPARROW:
-		S_LocalSound ("misc/menu1.wav");
-		if (--m_taunts_cursor < 0)
-			m_taunts_cursor = TAUNTS_ITEMS - 1;
-		break;
-
-	case K_ENTER:
-		m_entersound = true;
-
-		switch (m_taunts_cursor)
-		{
-		case 0:
-			Cbuf_AddText ("say Hello\n");	
-		       break;
-		case 1:
-			Cbuf_AddText ("say Bye\n");
-			break;
-
-		case 2:
-			Cbuf_AddText ("say ********\n");
-          		break;
-
-		case 3:
-			Cbuf_AddText ("say Follow Me\n");
-			break;
-		case 4:
-			Cbuf_AddText ("say NOOOOB!!\n");
-			break;
-
-
-
-		}
-	}
-}
-
-
-
-//=============================================================================
 /* Team Menu */
 
 int	m_team_cursor;
@@ -2046,22 +1816,30 @@ void M_Menu_Team_f (void)
 
 void M_Team_Draw (void)
 {
-	int		f;
-	qpic_t	*p;
+	Draw_Fill (10,10, 460, 32, GU_RGBA(1, 1, 1, 150));
+	M_DrawPic (10, 10, Draw_CachePic ("gfx/vgui/CS_logo.tga") );
+	Draw_Fill (10,45, 460, 222, GU_RGBA(1, 1, 1, 150));
+	qgui_print(40, 21, "Select Team");
+	
+	qgui_button(20, 50, button_width,16);
+	qgui_print(22, 54, "Terrorist");
+	
+	qgui_button(20, 70, button_width,16);
+	qgui_print(22, 74, "Counter-Terrorist");
+	
+	M_DrawTransPic (0, 45 + m_team_cursor * 20,Draw_CachePic( va("gfx/menudot.lmp") ) );
 	switch(m_team_cursor)
 	{
 		case 0:
-		M_Print(75, 40, "Join Terrorist team");
+			M_DrawTransPic (200, 50 ,Draw_CachePic( va("gfx/vgui/t_random.tga") ) );
+			qgui_print(250, 21,  "Join Terrorist team");
 		break;
 		
 		case 1:
-		M_Print(75, 40, "Join Counter Terrorist team");
+			M_DrawTransPic (200, 50 ,Draw_CachePic( va("gfx/vgui/ct_random.tga") ) );
+			qgui_print(250, 21, "Join Counter Terrorist team");
 		break;
 	}
-M_DrawTransPic (0, 60, Draw_CachePic ("gfx/ChangeTeam.lmp") );
-M_DrawTransPic (250, 200,Draw_CachePic("gfx/help1.lmp") );
-M_DrawTransPic (-40, 60 + m_team_cursor * 38,Draw_CachePic( va("gfx/menudot.lmp") ) );
-
 }
 
 
@@ -2421,8 +2199,8 @@ void M_Maps_Draw (void)
 	int		i;
 	int		f;
 	qpic_t	*p, *background;
-	background = Draw_CachePic ("gfx/conback.lmp");
-    M_DrawPic ((320-background->width)/2, 0, background);;
+	background = Draw_CachePic ("gfx/conback.tga");
+    M_DrawPic (0, 0, background);
 
     if((!maps_list[0]) && (maps_num == 0))
     {
@@ -3014,15 +2792,17 @@ enum
 	OPT_CUSTOMIZE = 0,
 	OPT_CONSOLE,
 	OPT_DEFAULTS,
+	OPT_ANOTHERCFG,
 	OPT_SUBMENU,
 	OPTIONS_ITEMS
 };
 enum 
 {
 	OPT_SUBMENU_0 = OPT_SUBMENU,	
+    OPT_CRHAIR,
+	OPT_CRCOLOR,	
 	OPT_GAMMA,			
 	OPT_SNDVOL,	
-	OPT_SHADOWS,
     OPTIONS_ITEMS_0
 };
 enum 
@@ -3045,12 +2825,15 @@ enum
 	OPT_CUSTOMIZE = 0,
 	OPT_CONSOLE,
 	OPT_DEFAULTS,
+	OPT_ANOTHERCFG,
 	OPT_SUBMENU,
 	OPTIONS_ITEMS
 };
 enum 
 {
 	OPT_SUBMENU_0 = OPT_SUBMENU,	
+    OPT_CRHAIR,
+	OPT_CRCOLOR,	
 	OPT_GAMMA,			
 	OPT_SNDVOL,		
     OPTIONS_ITEMS_0
@@ -3100,7 +2883,6 @@ void M_AdjustSliders (int dir)
     {
     	switch (options_cursor)
         {
-			/*
 			case OPT_CRHAIR:
 				crosshair.value += dir * 1;
 				if(crosshair.value > 6)
@@ -3109,8 +2891,6 @@ void M_AdjustSliders (int dir)
 					crosshair.value = 0;
 				Cvar_SetValue ("crosshair", crosshair.value);
 				break;
-			*/
-				/*
 			case OPT_CRCOLOR:	
 				crosshaircolor.value += dir * 10;
 				if (crosshaircolor.value < 0)
@@ -3119,7 +2899,6 @@ void M_AdjustSliders (int dir)
 					crosshaircolor.value = 255;
 				Cvar_SetValue ("crosshaircolor", crosshaircolor.value);
 				break;
-				*/
 			case OPT_GAMMA:	// gamma
 				v_gamma.value -= dir * 0.05;
 				if (v_gamma.value < 0.5)
@@ -3136,32 +2915,6 @@ void M_AdjustSliders (int dir)
 					volume.value = 1;
 				Cvar_SetValue ("volume", volume.value);
 				break;
-			case OPT_SHADOWS:	// shadows
-				Cvar_SetValue ("r_shadows", !r_shadows.value);
-				break;	
-				
-				/*
-			case OPT_QMB:
-				if(qmb_particles.value == 1)
-					qmb_particles.value = 0;
-				else
-					qmb_particles.value = 1;
-				Cvar_SetValue ("qmb_particles", qmb_particles.value);
-				Cvar_SetValue ("r_part_explosions",  qmb_particles.value);
-				Cvar_SetValue ("r_part_trails",      qmb_particles.value);
-				Cvar_SetValue ("r_part_sparks",      qmb_particles.value);
-				Cvar_SetValue ("r_part_spikes",      qmb_particles.value);
-				Cvar_SetValue ("r_part_gunshots",    qmb_particles.value);
-				Cvar_SetValue ("r_part_blood",       qmb_particles.value);
-				Cvar_SetValue ("r_part_telesplash",  qmb_particles.value);
-				Cvar_SetValue ("r_part_blobs",       qmb_particles.value);
-				Cvar_SetValue ("r_part_lavasplash",  qmb_particles.value);
-				Cvar_SetValue ("r_part_flames",      qmb_particles.value);
-				Cvar_SetValue ("r_part_lightning",   qmb_particles.value);
-				Cvar_SetValue ("r_part_flies",       qmb_particles.value);
-				Cvar_SetValue ("r_part_muzzleflash", qmb_particles.value);
-				break;
-				*/
         }
     }
     else if (m_submenu == 1)
@@ -3254,33 +3007,28 @@ void M_Options_Draw (void)
 	float d;
 
 
-	M_Print (16, 32+(OPT_CUSTOMIZE*8), "    Customize controls");
-	M_Print (16, 32+(OPT_CONSOLE*8),   "         Go to console");
-	M_Print (16, 32+(OPT_DEFAULTS*8),  "   Default  Config ");
-
+	M_Print (142, 32+(OPT_CUSTOMIZE*8), "        Customize controls");
+	M_Print (142, 32+(OPT_CONSOLE*8),   "        Go to console");
+	M_Print (142, 32+(OPT_DEFAULTS*8),  "        Default  Control");
+	M_Print (142, 32+(OPT_ANOTHERCFG*8),"        Alternative control");
 	switch (m_submenu) {
         case 0:    
-		//	M_Print (16, 32+(OPT_CRHAIR*8), 	   "            Crosshair");
-		//	r = crosshair.value * 0.16;
-		//	M_DrawSlider (220, 32+(OPT_CRHAIR*8), r);
+			M_Print (16, 32+(OPT_CRHAIR*8),   "        Crosshair");
+			r = crosshair.value * 0.16;
+			M_DrawSlider (220, 32+(OPT_CRHAIR*8), r);
 			
-		//	M_Print (16, 32+(OPT_CRCOLOR*8),   "         Crosshair Color");
-			//r = crosshaircolor.value;
-		//	Draw_Fill(350, 32+(OPT_CRCOLOR*8),32,8, r);
+			M_Print (16, 32+(OPT_CRCOLOR*8),  "        Crosshair Color");
+			r = crosshaircolor.value;
+			Draw_Fill(350, 32+(OPT_CRCOLOR*8),32,8, r);
 		
-			M_Print (16, 32+(OPT_GAMMA*8), 	   "            Brightness");
+			M_Print (16, 32+(OPT_GAMMA*8), 	  "        Brightness");
 			r = (1.0 - v_gamma.value) / 0.5;
 			M_DrawSlider (220, 32+(OPT_GAMMA*8), r);
 	
 		
-			M_Print (16, 32+(OPT_SNDVOL*8),   "          Sound Volume");
+			M_Print (16, 32+(OPT_SNDVOL*8),   "        Sound Volume");
 			r = volume.value;
 			M_DrawSlider (220, 32+(OPT_SNDVOL*8), r);
-			
-			M_Print (16, 32+(OPT_SHADOWS*8),   "          Shadows");
-			M_DrawCheckbox (220, 32+(OPT_SHADOWS*8), r_shadows.value);
-		//	M_Print (16, 32+(OPT_QMB*8),   "          QMB");
-			//M_DrawCheckbox (220, 32+(OPT_QMB*8), qmb_particles.value);
 		
             break;
         case 1:
@@ -3329,10 +3077,10 @@ void M_Options_Draw (void)
     switch (m_submenu)
         {
         case 0:
-            M_PrintWhite (220, 32+(OPT_SUBMENU*8), "More options");         
+            M_PrintWhite (208, 32+(OPT_SUBMENU*8), "More options");         
             break;
         case 1:
-            M_PrintWhite (220, 32+(OPT_SUBMENU*8), "Less options");         
+            M_PrintWhite (208, 32+(OPT_SUBMENU*8), "Less options");         
             break;
         default:
             break;
@@ -3364,6 +3112,9 @@ void M_Options_Key (int k)
 		case OPT_DEFAULTS:
 			Cbuf_AddText ("exec cfg/default.cfg\n");
 			break;
+		case OPT_ANOTHERCFG:
+			Cbuf_AddText ("exec cfg/another.cfg\n");
+			break;	
 		default:
 			M_AdjustSliders (1);
 			break;
@@ -4674,7 +4425,6 @@ void M_Init (void)
 	Cmd_AddCommand ("menu_singleplayer", M_Menu_SinglePlayer_f);
 	Cmd_AddCommand ("menu_multiplayer", M_Menu_MultiPlayer_f);
 	Cmd_AddCommand ("menu_team", M_Menu_Team_f);
-	Cmd_AddCommand ("menu_ingame", M_Menu_Ingame_f);
 	Cmd_AddCommand ("menu_setup", M_Menu_Setup_f);
 	Cmd_AddCommand ("menu_options", M_Menu_Options_f);
 	Cmd_AddCommand ("menu_keys", M_Menu_Keys_f);
@@ -4778,18 +4528,6 @@ void M_Draw (void)
 		M_Equipment_Draw ();
 		break;
 
-	case m_ingame:
-		M_Ingame_Draw ();
-		break;
-
-	case m_chat:
-		M_Chat_Draw ();
-		break;
-
-	case m_orders:
-		M_Orders_Draw ();
-		break;
-
 	case m_team:
 		M_Team_Draw ();
 		break;
@@ -4798,9 +4536,6 @@ void M_Draw (void)
 		break;
 	case m_terror:
 		M_Terror_Draw ();
-		break;
-	case m_taunts:
-		M_Taunts_Draw ();
 		break;
 	case m_bots:
 		M_Bots_Draw ();
@@ -4888,17 +4623,15 @@ void M_Keydown (int key)
 	case m_singleplayer:
 		M_SinglePlayer_Key (key);
 		return;
-
-	case m_taunts:
-		M_Taunts_Key (key);
-		return;
-
+		
 	case m_buyt:
 		M_Buyt_Key (key);
 		return;
+		
 	case m_pistolst:
 		M_Pistolst_Key (key);
 		return;
+		
 	case m_smgst:
 		M_Smgst_Key (key);
 		return;
@@ -4906,9 +4639,11 @@ void M_Keydown (int key)
 	case m_buyct:
 		M_Buyct_Key (key);
 		return;
+		
 	case m_pistolsct:
 		M_Pistolsct_Key (key);
 		return;
+		
 	case m_smgsct:
 		M_Smgsct_Key (key);
 		return;
@@ -4928,10 +4663,6 @@ void M_Keydown (int key)
 		M_Machineguns_Key (key);
 		return;
 
-	case m_ingame:
-		M_Ingame_Key (key);
-		return;
-
 	case m_bots:
 		M_Bots_Key (key);
 		return;
@@ -4940,20 +4671,14 @@ void M_Keydown (int key)
 		M_Equipment_Key (key);
 		return;
 
-	case m_chat:
-		M_Chat_Key (key);
-		return;
-
-	case m_orders:
-		M_Orders_Key (key);
-		return;
-
 	case m_team:
 		M_Team_Key (key);
 		return;
+		
 	case m_counter:
 		M_Counter_Key (key);
 		return;
+		
 	case m_terror:
 		M_Terror_Key (key);
 		return;

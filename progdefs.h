@@ -86,6 +86,7 @@ typedef struct entvars_s
 	string_t	model;
 	float	frame;
 	float	skin;
+	float	sequence;
 	float	effects;
 	vec3_t	mins;
 	vec3_t	maxs;
@@ -129,7 +130,6 @@ typedef struct entvars_s
 	float	teleport_time;
 	float	armortype;
 	float	armorvalue;
-	float	sequence;
 	float	waterlevel;
 	float	watertype;
 	float	ideal_yaw;
@@ -155,4 +155,4 @@ typedef struct entvars_s
 	vec3_t	rendercolor;
 } entvars_t;
 
-#define PROGHEADER_CRC 4877
+#define PROGHEADER_CRC 47926
