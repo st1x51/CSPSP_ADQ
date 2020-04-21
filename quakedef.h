@@ -142,16 +142,16 @@ void	VID_UnlockBuffer (void);
 // stock defines
 #define	IT_KNIFE				1
 #define	IT_USP					2
-#define	IT_GLOCK				4
-#define	IT_DEAGLE				8
-#define	IT_HEGRENADE			16
-#define	IT_M3					32
-#define	IT_AK47					64
-#define IT_AWP				    128
-#define IT_GALIL				256
-#define IT_AUG				    512
-#define IT_FAMAS				1024
-#define IT_M4A1				    2048
+#define	IT_GLOCK				3
+#define	IT_DEAGLE				4
+#define	IT_HEGRENADE			5
+#define	IT_M3					6
+#define	IT_AK47					7
+#define IT_AWP				    8
+#define IT_GALIL				9
+#define IT_AUG				    10
+#define IT_FAMAS				11
+#define IT_M4A1				    12
 
 #define IT_SHELLS               256
 #define IT_NAILS                512

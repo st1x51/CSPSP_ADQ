@@ -1733,23 +1733,30 @@ void M_Menu_Shotguns_f (void)
 
 void M_Shotguns_Draw (void)
 {
-	int		f;
-	qpic_t	*p;
-
-
-
-  M_DrawTransPic (76, 0, Draw_CachePic ("gfx/shotgun.lmp") );
-  //M_PrintWhite (76, 39, "M3 Super 90");
-  //M_PrintWhite (180, 39, "Price 30$");
-  //M_PrintWhite (76, 59, "XM1014");
-  //M_PrintWhite (180, 59, "Price 40$");
-
-    M_DrawTransPic (76, 40, Draw_CachePic ("gfx/buy/w_m3.lmp") );
-    M_DrawTransPic (76, 78, Draw_CachePic ("gfx/buy/w_xm1014.lmp") );
-
-
-M_DrawTransPic (54, 40 + m_shotguns_cursor * 38,Draw_CachePic( va("gfx/menudot.lmp") ) );
-
+	Draw_Fill (10,10, 460, 32, GU_RGBA(1, 1, 1, 150));
+	M_DrawPic (10, 10, Draw_CachePic ("gfx/vgui/CS_logo.tga") );
+	Draw_Fill (10,45, 460, 222, GU_RGBA(1, 1, 1, 150));
+	qgui_print(40, 21, "Buy menu");
+	
+	qgui_button(20, 50, 160,16);
+	qgui_print(22, 54, "M3");
+	
+	qgui_button(20, 70, 160,16);
+	qgui_print(22, 74, "XM1014");
+	
+	M_DrawTransPic (0, 45 + m_shotguns_cursor * 20,Draw_CachePic( va("gfx/menudot.lmp") ) );
+	switch(m_shotguns_cursor)
+	{
+		case 0:
+			M_DrawTransPic (200, 50 ,Draw_CachePic( va("gfx/vgui/m3.tga") ) );
+			qgui_print(250, 21, "Price: 1700$");
+		break;
+		
+		case 1:
+			M_DrawTransPic (200, 50 ,Draw_CachePic( va("gfx/vgui/xm1014.tga") ) );
+			qgui_print(250, 21, "Price: 3000$");
+		break;
+	}
 }
 
 

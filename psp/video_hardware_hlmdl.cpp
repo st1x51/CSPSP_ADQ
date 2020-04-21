@@ -1,4 +1,3 @@
-
 extern"C"
 {
 #include "../quakedef.h"
@@ -85,10 +84,6 @@ void QuaternionGLAngle(const vec3_t angles, vec4_t quaternion)
     quaternion[2] = cosr * cosp * siny - sinr * sinp * cosy;
     quaternion[3] = cosr * cosp * cosy + sinr * sinp * siny;
 }
-
-
-
-
 
 matrix3x4 transform_matrix[128];	/* Vertex transformation matrix */
 
@@ -370,22 +365,6 @@ void HL_CalcBoneAdj(hlmodel_t *model)
     {
         /*~~~~~~~~~~~~~~~~~~~~~*/
         int j = control[i].index;
-        /*~~~~~~~~~~~~~~~~~~~~~*/
-/*
-        if(control[i].type & 0x8000)
-        {
-            value = model->controller[j] + control[i].start;
-        }
-        else
-        {
-            value = model->controller[j];
-            if(value < 0)
-                value = 0;
-            else if(value > 1.0)
-                value = 1.0;
-            value = (1.0 - value) * control[i].start + value * control[i].end;
-        }
-*/
 
 		if (j <= 3)
 		{

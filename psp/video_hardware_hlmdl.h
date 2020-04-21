@@ -14,8 +14,8 @@
 #define HLPOLYHEADER	(('T' << 24) + ('S' << 16) + ('D' << 8) + 'I')	/* little-endian "IDST" */
 #define HLMDLHEADER		"IDST"
 
-#define MAXSTUDIOTRIANGLES	32768	// TODO: tune this
-#define MAXSTUDIOVERTS		4096	// TODO: tune this
+#define MAXSTUDIOTRIANGLES	32768	// total triangles
+#define MAXSTUDIOVERTS		4096	// total verst
 #define MAXSTUDIOSEQUENCES	256		// total animation sequences
 #define MAXSTUDIOSKINS		100		// total textures
 #define MAXSTUDIOSRCBONES	512		// bones allowed at source movement
