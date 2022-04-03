@@ -1607,6 +1607,7 @@ void R_DrawViewModel (void)
 //New vars
 	currententity->renderamt = cl_entities[cl.viewentity].renderamt;
     currententity->rendermode = cl_entities[cl.viewentity].rendermode;
+	currententity->renderfx = cl_entities[cl.viewentity].renderfx;
     VectorCopy (cl_entities[cl.viewentity].rendercolor, currententity->rendercolor);
 //New vars
 #if 0
