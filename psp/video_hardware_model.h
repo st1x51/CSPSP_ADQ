@@ -263,6 +263,7 @@ typedef struct
 } msprite_t;
 
 //HL
+#pragma pack(push, 1)
 typedef struct
 {
 	short   type;
@@ -275,7 +276,7 @@ typedef struct
 	int		synctype;
 	mspriteframedesc_t	frames[1];
 } mspritehl_t;
-
+#pragma pack(pop)
 
 /*
 ==============================================================================

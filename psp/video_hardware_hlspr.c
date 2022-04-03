@@ -10,7 +10,7 @@ extern char	 *loadname[32];
 Mod_LoadSpriteFrame
 =================
 */
-dspriteframetype_t* Mod_LoadHLSpriteFrame (void * pin, mspriteframe_t **ppframe, int framenum)
+dspriteframetype_t* Mod_LoadHLSpriteFrame (void * pin, mspriteframe_t **ppframe, int framenum,byte *pal)
 {
 	dspriteframe_t		*pinframe;
 	mspriteframe_t		*pspriteframe;
@@ -43,7 +43,7 @@ dspriteframetype_t* Mod_LoadHLSpriteFrame (void * pin, mspriteframe_t **ppframe,
 
 	sprintf (name, "%s_%i", loadmodel->name, framenum);
 
-	pspriteframe->gl_texturenum = GL_LoadPaletteTexture (name, width, height, (byte *)(pinframe + 1), (byte*)host_basepal, PAL_RGB, true, GU_LINEAR, 0);
+	pspriteframe->gl_texturenum = GL_LoadPaletteTexture (name, width, height, (byte *)(pinframe + 1), (byte*)pal, PAL_RGBA, true, GU_LINEAR, 0);
 
 	return (dspriteframetype_t*)((byte *)(pinframe + 1) + size);
 }
@@ -54,7 +54,7 @@ dspriteframetype_t* Mod_LoadHLSpriteFrame (void * pin, mspriteframe_t **ppframe,
 Mod_LoadSpriteGroup
 =================
 */
-dspriteframetype_t* Mod_LoadHLSpriteGroup (void * pin, mspriteframe_t **ppframe, int framenum)
+dspriteframetype_t* Mod_LoadHLSpriteGroup (void * pin, mspriteframe_t **ppframe, int framenum,byte *pal)
 {
 	dspritegroup_t		*pingroup;
 	mspritegroup_t		*pspritegroup;
@@ -105,7 +105,7 @@ dspriteframetype_t* Mod_LoadHLSpriteGroup (void * pin, mspriteframe_t **ppframe,
 
 	for (i=0 ; i<numframes ; i++)
 	{
-		ptemp = Mod_LoadHLSpriteFrame (ptemp, &pspritegroup->frames[i], framenum * 100 + i);
+		ptemp = Mod_LoadHLSpriteFrame (ptemp, &pspritegroup->frames[i], framenum * 100 + i,pal);
 	}
 
 	return (dspriteframetype_t*)ptemp;
@@ -125,9 +125,8 @@ void Mod_LoadHLSpriteModel (model_t *mod, dspritehl_t   *pin)
 	dspriteframetype_t	*pframetype;
 	int                 sptype;
 	short               *numi;
-	unsigned char pal[256*4];
-
-	printf("HL_MODEL\n");
+	
+	byte pal[256*4];
 
     sptype = LittleLong (pin->type);
 	numframes = LittleLong (pin->numframes);
@@ -189,11 +188,11 @@ void Mod_LoadHLSpriteModel (model_t *mod, dspritehl_t   *pin)
 
 		if (frametype == SPR_SINGLE)
 		{
-			pframetype = Mod_LoadHLSpriteFrame (pframetype + 1, &psprite->frames[i].frameptr, i);
+			pframetype = Mod_LoadHLSpriteFrame (pframetype + 1, &psprite->frames[i].frameptr, i,pal);
 		}
 		else
 		{
-			pframetype = Mod_LoadHLSpriteGroup (pframetype + 1, &psprite->frames[i].frameptr, i);
+			pframetype = Mod_LoadHLSpriteGroup (pframetype + 1, &psprite->frames[i].frameptr, i,pal);
 		}
 		if(pframetype == NULL)
 		   break;
