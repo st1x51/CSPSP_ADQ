@@ -25,6 +25,20 @@ extern "C"
 #include "../quakedef.h"
 }
 
+#if !defined(PNG_LIBPNG_VER) || \
+    PNG_LIBPNG_VER < 10018 ||   \
+    (PNG_LIBPNG_VER > 10200 &&  \
+     PNG_LIBPNG_VER < 10209)
+  /* Changes to Libpng from version 1.2.42 to 1.4.0 (January 4, 2010)
+   * ...
+   * 2. m. The function png_set_gray_1_2_4_to_8() was removed. It has been
+   *       deprecated since libpng-1.0.18 and 1.2.9, when it was replaced with
+   *       png_set_expand_gray_1_2_4_to_8() because the former function also
+   *       expanded palette images.
+   */
+# define png_set_expand_gray_1_2_4_to_8 png_set_gray_1_2_4_to_8
+#endif
+
 cvar_t	jpeg_compression_level = {"jpeg_compression_level", "75"};
 
 int		    image_width;

@@ -1,1 +1,2 @@
-make -f Makefile pause
+make -f makefile
+pause

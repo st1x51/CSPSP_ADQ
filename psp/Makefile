@@ -95,6 +95,7 @@ VIDEO_OBJS = \
 	$(OBJ_DIR)/psp/clipping.o \
 	$(OBJ_DIR)/psp/video_hardware.o \
 	$(OBJ_DIR)/psp/video_hardware_hlmdl.o \
+	$(OBJ_DIR)/psp/video_hardware_hlspr.o \
 	$(OBJ_DIR)/psp/video_hardware_draw.o \
 	$(OBJ_DIR)/psp/video_hardware_decals.o \
 	$(OBJ_DIR)/psp/video_hardware_resample.o \
