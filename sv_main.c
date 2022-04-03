@@ -523,7 +523,10 @@ void SV_WriteEntitiesToClient (edict_t	*clent, sizebuf_t *msg)
 			bits |= U_SEQUENCE;
 		if (ent->baseline.bodygroup != ent->v.bodygroup)
 			bits |= U_BODYGROUP;
-		
+			
+		if (ent->baseline.renderfx != ent->v.renderfx)
+			bits |= U_RENDERFX;
+			
 		if (ent->baseline.modelindex != ent->v.modelindex)
 			bits |= U_MODEL;
 
@@ -577,6 +580,8 @@ void SV_WriteEntitiesToClient (edict_t	*clent, sizebuf_t *msg)
 			MSG_WriteByte (msg, ent->v.sequence);
 		if (bits & U_BODYGROUP)
 			MSG_WriteByte (msg, ent->v.bodygroup);
+		if (bits & U_RENDERFX)
+			MSG_WriteByte (msg, ent->v.renderfx);
 		if (bits & U_ORIGIN1)
 			MSG_WriteCoord (msg, ent->v.origin[0]);		
 		if (bits & U_ANGLE1)
@@ -1009,6 +1014,7 @@ void SV_CreateBaseline (void)
 //New vars
 		svent->baseline.renderamt = svent->v.renderamt;
 		svent->baseline.rendermode = svent->v.rendermode;
+		svent->baseline.rendermode = svent->v.renderfx;
 		VectorCopy (svent->v.rendercolor, svent->baseline.rendercolor);
 //New vars
 		if (entnum > 0 && entnum <= svs.maxclients)
@@ -1038,6 +1044,7 @@ void SV_CreateBaseline (void)
 //New vars
        MSG_WriteByte (&sv.signon, svent->baseline.renderamt);
        MSG_WriteByte (&sv.signon, svent->baseline.rendermode);
+	   MSG_WriteByte (&sv.signon, svent->baseline.renderfx);
 //New vars
 		for (i=0 ; i<3 ; i++)
 		{

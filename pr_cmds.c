@@ -1791,6 +1791,7 @@ void PF_makestatic (void)
 //New vars
 	MSG_WriteByte (&sv.signon, ent->v.renderamt);
 	MSG_WriteByte (&sv.signon, ent->v.rendermode);
+	MSG_WriteByte (&sv.signon, ent->v.renderfx);
 //New vars
 	for (i=0 ; i<3 ; i++)
 	{

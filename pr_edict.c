@@ -136,6 +136,7 @@ void ED_Free (edict_t *ed)
 	ed->v.renderamt = 0;
 	ed->v.rendermode = 0;
 	VectorCopy (vec3_origin, ed->v.rendercolor);
+	ed->v.renderfx = 0;
 //New vars
 	VectorCopy (vec3_origin, ed->v.origin);
 	VectorCopy (vec3_origin, ed->v.angles);

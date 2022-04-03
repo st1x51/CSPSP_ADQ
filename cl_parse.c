@@ -610,6 +610,10 @@ if (bits&(1<<i))
 		ent->bodygroup = MSG_ReadByte ();
 	else
 		ent->bodygroup = ent->baseline.bodygroup;
+	if (bits & U_RENDERFX) 
+		ent->renderfx = MSG_ReadByte ();
+	else
+		ent->renderfx = ent->baseline.renderfx;	
 // shift the known values for interpolation
 	VectorCopy (ent->msg_origins[0], ent->msg_origins[1]);
 	VectorCopy (ent->msg_angles[0], ent->msg_angles[1]);
@@ -673,6 +677,7 @@ void CL_ParseBaseline (entity_t *ent)
 //New vars
 	ent->baseline.renderamt = MSG_ReadByte();
 	ent->baseline.rendermode = MSG_ReadByte();
+	ent->baseline.renderfx = MSG_ReadByte();
 //New vars
 
 	for (i=0 ; i<3 ; i++)
@@ -877,6 +882,7 @@ void CL_ParseStatic (void)
 //New vars
 	ent->renderamt = ent->baseline.renderamt;
 	ent->rendermode = ent->baseline.rendermode;
+	ent->renderfx = ent->baseline.renderfx;
     VectorCopy (ent->baseline.rendercolor, ent->rendercolor);
 //New vars
 	VectorCopy (ent->baseline.origin, ent->origin);

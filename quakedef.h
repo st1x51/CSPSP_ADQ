@@ -241,6 +241,7 @@ typedef struct
 	float	renderamt;
     float	rendermode;
     vec3_t	rendercolor;
+	float	renderfx;
 //New vars
 } entity_state_t;
 

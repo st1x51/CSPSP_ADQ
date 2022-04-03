@@ -75,6 +75,7 @@ typedef struct entity_s
 	float	                renderamt;
     float	                rendermode;
     vec3_t	                rendercolor;
+	float	                renderfx;
 //New vars
 	float	bonecontrols[4];	
 // FIXME: could turn these into a union
