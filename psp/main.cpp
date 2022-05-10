@@ -223,8 +223,8 @@ void StartUpParams(char **args, int argc, char *cmdlinePath, char *currentDirect
  			do {
  				res = sceIoDread(dir_fd, p_dir_de);
  				if ((res > 0) && (p_dir_de->d_stat.st_attr & FIO_SO_IFDIR)) {
- 					if (!(stricmp(p_dir_de->d_name, ".") == 0 || stricmp(p_dir_de->d_name, "..") == 0 ||
- 					      stricmp(p_dir_de->d_name, "mp3") == 0 || stricmp(p_dir_de->d_name, "id1") == 0)) {
+ 					if (!(Q_strcmp(p_dir_de->d_name, ".") == 0 || Q_strcmp(p_dir_de->d_name, "..") == 0 ||
+ 					      Q_strcmp(p_dir_de->d_name, "mp3") == 0 || Q_strcmp(p_dir_de->d_name, "id1") == 0)) {
  						dirs[j++] = strdup( p_dir_de->d_name);
  					}
  				}
@@ -244,7 +244,7 @@ void StartUpParams(char **args, int argc, char *cmdlinePath, char *currentDirect
 			
 			if (idx+1 < f_argc) {
 				for (int i = 0 ;i < MAX_HEAP_MB - MIN_HEAP_MB; i++) {
-					if (stricmp(heaps[i], args[idx+1]) == 0) {
+					if (Q_strcmp(heaps[i], args[idx+1]) == 0) {
 						menu_cur[2] = i;
 					}
 
@@ -256,7 +256,7 @@ void StartUpParams(char **args, int argc, char *cmdlinePath, char *currentDirect
 		} else {
 			for (int i = 0 ;i < MAX_HEAP_MB - MIN_HEAP_MB; i++) {
 				sprintf(temp_str, "%d", heapSize/(1024*1024));
-				if (stricmp(heaps[i],temp_str) == 0) {
+				if (Q_strcmp(heaps[i],temp_str) == 0) {
 					menu_cur[2] = i;
 				}
 			}			
@@ -267,7 +267,7 @@ void StartUpParams(char **args, int argc, char *cmdlinePath, char *currentDirect
 			
 			if (idx+1 < f_argc) {
 				for (int i = 0 ;i < j; i++) {
-					if (stricmp(args[idx+1],dirs[i]) == 0) {
+					if (Q_strcmp(args[idx+1],dirs[i]) == 0) {
 						menu_cur[0] = i;
 					}
 	
@@ -346,7 +346,7 @@ void StartUpParams(char **args, int argc, char *cmdlinePath, char *currentDirect
 		}
 		if (CheckParm(args, f_argc, "-game")) {
 			int idx = CheckParm(args, f_argc, "-game");
-			if (stricmp(args[idx+1],dirs[menu_cur[0]]) != 0) {
+			if (Q_strcmp(args[idx+1],dirs[menu_cur[0]]) != 0) {
 
 				if (strlen(dirs[menu_cur[0]]) > 0) {
 					int len2 = strlen(dirs[menu_cur[0]]);
@@ -372,8 +372,7 @@ void StartUpParams(char **args, int argc, char *cmdlinePath, char *currentDirect
 				f_argc += 2;
 			}
 		}
-
-		if (stricmp(cpus[menu_cur[1]],"333") == 0) {
+		if (Q_strcmp(cpus[menu_cur[1]],"333") == 0) {
 		
 			if (!CheckParm(args, f_argc, "-cpu333")) {
 				int len1 = strlen("-cpu333");

@@ -226,7 +226,7 @@ void CDAudio_Update(void)
 {
     if(enabled == true)
     {
-        if(strcmpi(bgmtype.string,"cd") == 0)
+        if(Q_strcmp(bgmtype.string,"cd") == 0)
         {
 			if(mp3_status == MP3_END)
 		    {

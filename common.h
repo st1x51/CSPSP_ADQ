@@ -42,7 +42,6 @@ typedef enum {false, true}	qboolean;
 #endif
 
 #define bound(a, b, c) ((a) >= (c) ? (a) : (b) < (a) ? (a) : (b) > (c) ? (c) : (b))
-
 //============================================================================
 
 typedef struct sizebuf_s
