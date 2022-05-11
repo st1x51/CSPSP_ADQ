@@ -244,6 +244,11 @@ void qgui_print (int cx, int cy, char *str)
 {
 	Draw_FrontText(str,cx,cy-4, GU_RGBA(255, 255, 255, 200) , 10);
 }
+void qgui_button(int x,int y,int w,int h)
+{
+	Draw_Fill (x, y, w,h, GU_RGBA(255, 215, 0, 100));
+	Draw_Fill (x+1, y+1, w-2 ,h-2, GU_RGBA(1, 1, 1, 255));	
+}
 void M_PrintWhite (int cx, int cy, char *str)
 {
 	while (*str)
@@ -705,12 +710,38 @@ void M_Menu_Buyct_f (void)
 
 void M_Buyct_Draw (void)
 {
-	int		f;
-	qpic_t	*p;
+//logo menu
+	Draw_Fill (10,10, 460, 32, GU_RGBA(1, 1, 1, 150));
+	M_DrawPic (10, 10, Draw_CachePic ("gfx/vgui/CS_logo.tga") );
+	Draw_Fill (10,45, 460, 222, GU_RGBA(1, 1, 1, 150));
+	qgui_print(40, 21, "Buy menu");
+	
+	qgui_button(20, 50, 160,16);
+	qgui_print(22, 54, "Pistols");
+	
+	qgui_button(20, 70, 160,16);
+	qgui_print(22, 74, "Shotguns");
 
-M_DrawTransPic (0, 20, Draw_CachePic ("gfx/menu/buymenu.lmp") );
+	qgui_button(20, 90, 160,16);
+	qgui_print(22, 94, "Sub-Machine Guns");
 
-	M_DrawTransPic (-40, 20 + m_buyct_cursor * 38,Draw_CachePic( va("gfx/menudot.lmp") ) );
+	qgui_button(20, 110, 160,16);
+	qgui_print(22, 114, "Rifles");		
+	
+	qgui_button(20, 130, 160,16);
+	qgui_print(22, 134, "Machine Guns");	
+	qgui_button(20, 150, 160,16);
+	qgui_print(22, 154, "Equipments");
+	/*
+	qgui_button(20, 150, 160,16);
+	qgui_print(22, 154, "Primary Ammo");	
+	
+	qgui_button(20, 170, 160,16);
+	qgui_print(22, 174, "Secondary Ammo");	
+	*/
+	//qgui_button(20, 190, 160,16); // qgui_button(20, 190, 160,16)
+	//qgui_print(22, 194, "Equipments");	// qgui_print(22, 194, "Equipments");
+	M_DrawTransPic (0, 45 + m_buyct_cursor * 20,Draw_CachePic( va("gfx/menudot.lmp") ) );
 }
 
 
@@ -768,16 +799,12 @@ void M_Buyct_Key (int key)
 		}
 	}
 }
-void qgui_button(int x,int y,int w,int h)
-{
-	Draw_Fill (x, y, w,h, GU_RGBA(255, 215, 0, 100));
-	Draw_Fill (x+1, y+1, w-2 ,h-2, GU_RGBA(1, 1, 1, 255));	
-}
+
 //=============================================================================
 /* In Game Buy Menu Buy Terrorist */
 
 int	m_buyt_cursor;
-#define	BUYT_ITEMS	8
+#define	BUYT_ITEMS	6
 
 
 
@@ -811,15 +838,17 @@ void M_Buyt_Draw (void)
 	
 	qgui_button(20, 130, 160,16);
 	qgui_print(22, 134, "Machine Guns");	
-	
+	qgui_button(20, 150, 160,16);
+	qgui_print(22, 154, "Equipments");
+	/*
 	qgui_button(20, 150, 160,16);
 	qgui_print(22, 154, "Primary Ammo");	
 	
 	qgui_button(20, 170, 160,16);
 	qgui_print(22, 174, "Secondary Ammo");	
-	
-	qgui_button(20, 190, 160,16);
-	qgui_print(22, 194, "Equipments");	
+	*/
+	//qgui_button(20, 190, 160,16); // qgui_button(20, 190, 160,16)
+	//qgui_print(22, 194, "Equipments");	// qgui_print(22, 194, "Equipments");
 	M_DrawTransPic (0, 45 + m_buyt_cursor * 20,Draw_CachePic( va("gfx/menudot.lmp") ) );
 }
 
@@ -872,15 +901,16 @@ void M_Buyt_Key (int key)
 			M_Menu_Machineguns_f ();
 			break;
 		case 5:
-			Cbuf_AddText ("impulse 83\n"); 
+			M_Menu_Equipment_f(); 
 			break;
+			/*
 		case 6:
 			Cbuf_AddText ("impulse 84\n"); 
 			break;
 		case 7:
 			M_Menu_Equipment_f ();
 			break;
-
+			*/
 		}
 	}
 }
@@ -1029,23 +1059,53 @@ void M_Menu_Pistolsct_f (void)
 
 void M_Pistolsct_Draw (void)
 {
-	int		f;
-	qpic_t	*p;
+	Draw_Fill (10,10, 460, 32, GU_RGBA(1, 1, 1, 150));
+	M_DrawPic (10, 10, Draw_CachePic ("gfx/vgui/CS_logo.tga") );
+	Draw_Fill (10,45, 460, 222, GU_RGBA(1, 1, 1, 150));
+	qgui_print(40, 21, "Buy menu");
+	
+	qgui_button(20, 50, 160,16);
+	qgui_print(22, 54, "Glock");
+	
+	qgui_button(20, 70, 160,16);
+	qgui_print(22, 74, "USP");
 
-M_DrawTransPic (76, 0, Draw_CachePic ("gfx/pistols.lmp") );
+	qgui_button(20, 90, 160,16);
+	qgui_print(22, 94, "Deagle");
 
-
-    M_DrawTransPic (76, 40, Draw_CachePic ("gfx/buy/w_glock.lmp") );
-    M_DrawTransPic (76, 78, Draw_CachePic ("gfx/buy/w_usp.lmp") );
-    M_DrawTransPic (76, 116, Draw_CachePic ("gfx/buy/w_deagle.lmp") );
-    M_DrawTransPic (76, 154, Draw_CachePic ("gfx/buy/w_p228.lmp") );
-    M_DrawTransPic (76, 192, Draw_CachePic ("gfx/buy/w_fiveseven.lmp") );
-
+	qgui_button(20, 110, 160,16);
+	qgui_print(22, 114, "P228");		
+	
+	qgui_button(20, 130, 160,16);
+	qgui_print(22, 134, "Five-seven");	
+	M_DrawTransPic (0, 45 + m_pistolsct_cursor * 20,Draw_CachePic( va("gfx/menudot.lmp") ) );
+	switch(m_pistolsct_cursor)
+	{
+		case 0:
+			M_DrawTransPic (200, 30 ,Draw_CachePic( va("gfx/vgui/glock18.tga") ) );
+			qgui_print(250, 21, "Price: 400$");
+		break;
 		
-
-
-M_DrawTransPic (54, 40 + m_pistolsct_cursor * 38,Draw_CachePic( va("gfx/menudot.lmp") ) );
-
+		case 1:
+			M_DrawTransPic (200, 30 ,Draw_CachePic( va("gfx/vgui/usp45.tga") ) );
+			qgui_print(250, 21, "Price: 500$");
+		break;
+		
+		case 2:
+			M_DrawTransPic (200, 30 ,Draw_CachePic( va("gfx/vgui/deserteagle.tga") ) );
+			qgui_print(250, 21, "Price: 650$");
+		break;
+		
+		case 3:
+			M_DrawTransPic (200, 30 ,Draw_CachePic( va("gfx/vgui/p228.tga") ) );
+			qgui_print(250, 21, "Price: 600$");
+		break;
+		
+		case 4:
+			M_DrawTransPic (200, 30 ,Draw_CachePic( va("gfx/vgui/fiveseven.tga") ) );
+			qgui_print(250, 21, "Price: 750$");
+		break;
+	}
 }
 
 
@@ -1122,19 +1182,17 @@ void M_Menu_Machineguns_f (void)
 
 void M_Machineguns_Draw (void)
 {
-	int		f;
-	qpic_t	*p;
+	Draw_Fill (10,10, 460, 32, GU_RGBA(1, 1, 1, 150));
+	M_DrawPic (10, 10, Draw_CachePic ("gfx/vgui/CS_logo.tga") );
+	Draw_Fill (10,45, 460, 222, GU_RGBA(1, 1, 1, 150));
+	qgui_print(40, 21, "Buy menu");
 
+	M_DrawTransPic (0, 45 + m_machineguns_cursor * 20,Draw_CachePic( va("gfx/menudot.lmp") ) );
 
-
-M_DrawTransPic (76, 0, Draw_CachePic ("gfx/mg.lmp") );
-
-
-    M_DrawTransPic (76, 40, Draw_CachePic ("gfx/buy/w_m249.lmp") );
-
-
-M_DrawTransPic (54, 40 + m_machineguns_cursor * 38,Draw_CachePic( va("gfx/menudot.lmp") ) );
-
+	qgui_button(20, 50, 160,16);
+	qgui_print(22, 54, "M249");
+	M_DrawTransPic (200, 30 ,Draw_CachePic( va("gfx/vgui/m249.tga") ) );
+	qgui_print(250, 21, "Price: 5750$");
 }
 
 
@@ -1179,7 +1237,7 @@ void M_Machineguns_Key (int key)
 /* Equipment MENU */
 
 int m_equipment_cursor;
-#define    EQUIPMENT_ITEMS 3
+#define    EQUIPMENT_ITEMS 1
 
 void M_Menu_Equipment_f (void)
 {
@@ -1196,20 +1254,22 @@ void M_Menu_Equipment_f (void)
 
 void M_Equipment_Draw (void)
 {
-	int		f;
-	qpic_t	*p;
+	Draw_Fill (10,10, 460, 32, GU_RGBA(1, 1, 1, 150));
+	M_DrawPic (10, 10, Draw_CachePic ("gfx/vgui/CS_logo.tga") );
+	Draw_Fill (10,45, 460, 222, GU_RGBA(1, 1, 1, 150));
+	qgui_print(40, 21, "Buy menu");
 
+	M_DrawTransPic (0, 45 + m_equipment_cursor * 20,Draw_CachePic( va("gfx/menudot.lmp") ) );
 
-
-M_DrawTransPic (76, 0, Draw_CachePic ("gfx/eq.lmp") );
-
-    M_DrawTransPic (76, 40, Draw_CachePic ("gfx/buy/w_kevlar.lmp") );
-    M_DrawTransPic (76, 78, Draw_CachePic ("gfx/buy/w_he.lmp") );
-    M_DrawTransPic (76, 116, Draw_CachePic ("gfx/buy/w_ammo.lmp") );
-
-
-M_DrawTransPic (54, 40 + m_equipment_cursor * 38,Draw_CachePic( va("gfx/menudot.lmp") ) );
-
+	qgui_button(20, 50, 160,16);
+	qgui_print(22, 54, "HE Grenade");
+	switch(m_equipment_cursor)
+	{
+		case 0:
+			M_DrawTransPic (200, 30 ,Draw_CachePic( va("gfx/vgui/hegrenade.tga") ) );
+			qgui_print(250, 21, "Price: 300$");
+		break;
+	}
 }
 
 
@@ -1244,17 +1304,8 @@ void M_Equipment_Key (int key)
 		switch (m_equipment_cursor)
 		{
 		case 0:
-		Cbuf_AddText ("impulse 44\n"); 
-				break;
-
-		case 1:
 		Cbuf_AddText ("impulse 41\n"); 
 				break;
-
-		case 2:
-		Cbuf_AddText ("impulse 81\n"); 
-				break;
-
 		}
 	}
 }
@@ -1302,7 +1353,7 @@ void M_Smgst_Draw (void)
 	{
 		case 0:
 			M_DrawTransPic (200, 40 ,Draw_CachePic( va("gfx/vgui/mac10.tga") ) );
-			qgui_print(250, 21, "Price: 1250$");
+			qgui_print(250, 21, "Price: 1400$");
 		break;
 		
 		case 1:
@@ -1364,7 +1415,6 @@ void M_Smgst_Key (int key)
 		case 3:
 		Cbuf_AddText ("impulse 88\n"); //p90
 		break;		
-
 		}
 	}
 }
@@ -1373,7 +1423,7 @@ void M_Smgst_Key (int key)
 /* SubMachineGun MENU Counter_terrorist */
 
 int m_smgsct_cursor;
-#define    SMGSCT_ITEMS 2
+#define    SMGSCT_ITEMS 4
 
 void M_Menu_Smgsct_f (void)
 {
@@ -1390,22 +1440,46 @@ void M_Menu_Smgsct_f (void)
 
 void M_Smgsct_Draw (void)
 {
-	int		f;
-	qpic_t	*p;
+	Draw_Fill (10,10, 460, 32, GU_RGBA(1, 1, 1, 150));
+	M_DrawPic (10, 10, Draw_CachePic ("gfx/vgui/CS_logo.tga") );
+	Draw_Fill (10,45, 460, 222, GU_RGBA(1, 1, 1, 150));
+	qgui_print(40, 21, "Buy menu");
+	
+	qgui_button(20, 50, 160,16);
+	qgui_print(22, 54, "TMP");
+	
+	qgui_button(20, 70, 160,16);
+	qgui_print(22, 74, "MP5");
 
+	qgui_button(20, 90, 160,16);
+	qgui_print(22, 94, "UMP45");
 
-
-  M_DrawTransPic (76, 0, Draw_CachePic ("gfx/smg.lmp") );
-
-//MP5 
-//P90 
-
-    M_DrawTransPic (76, 40, Draw_CachePic ("gfx/buy/w_mp5.lmp") );
-    M_DrawTransPic (76, 78, Draw_CachePic ("gfx/buy/w_p90.lmp") );
-
-
-M_DrawTransPic (54, 40 + m_smgsct_cursor * 38,Draw_CachePic( va("gfx/menudot.lmp") ) );
-
+	qgui_button(20, 110, 160,16);
+	qgui_print(22, 114, "P90");		
+	
+	M_DrawTransPic (0, 45 + m_smgsct_cursor * 20,Draw_CachePic( va("gfx/menudot.lmp") ) );
+	switch(m_smgsct_cursor)
+	{
+		case 0:
+			M_DrawTransPic (200, 40 ,Draw_CachePic( va("gfx/vgui/tmp.tga") ) );
+			qgui_print(250, 21, "Price: 1250$");
+		break;
+		
+		case 1:
+			M_DrawTransPic (200, 40 ,Draw_CachePic( va("gfx/vgui/mp5.tga") ) );
+			qgui_print(250, 21, "Price: 1500$");
+		break;
+		
+		case 2:
+			M_DrawTransPic (200, 40 ,Draw_CachePic( va("gfx/vgui/ump45.tga") ) );
+			qgui_print(250, 21, "Price: 1700$");
+		break;
+		
+		case 3:
+			M_DrawTransPic (200, 40 ,Draw_CachePic( va("gfx/vgui/p90.tga") ) );
+			qgui_print(250, 21, "Price: 2350$");
+		break;
+	}
 }
 
 
@@ -1440,12 +1514,17 @@ void M_Smgsct_Key (int key)
 		switch (m_smgsct_cursor)
 		{
 		case 0:
-		Cbuf_AddText ("impulse 42\n"); 
-				break;
+		Cbuf_AddText ("impulse 44\n"); //tmp
+		break;
 		case 1:
-		Cbuf_AddText ("impulse 65\n"); 
-				break;
-
+		Cbuf_AddText ("impulse 65\n"); //mp5
+		break;
+		case 2:
+		Cbuf_AddText ("impulse 87\n"); //ump
+		break;
+		case 3:
+		Cbuf_AddText ("impulse 88\n"); //p90
+		break;		
 		}
 	}
 }
@@ -1617,7 +1696,7 @@ void M_Riflest_Key (int key)
 /* Rifles MENU Counter_teorrist */
 
 int m_riflesct_cursor;
-#define    RIFLESCT_ITEMS 4
+#define    RIFLESCT_ITEMS 6
 
 void M_Menu_Riflesct_f (void)
 {
@@ -1634,28 +1713,62 @@ void M_Menu_Riflesct_f (void)
 
 void M_Riflesct_Draw (void)
 {
-	int		f;
-	qpic_t	*p;
+	Draw_Fill (10,10, 460, 32, GU_RGBA(1, 1, 1, 150));
+	M_DrawPic (10, 10, Draw_CachePic ("gfx/vgui/CS_logo.tga") );
+	Draw_Fill (10,45, 460, 222, GU_RGBA(1, 1, 1, 150));
+	qgui_print(40, 21, "Buy menu");
+	
+	qgui_button(20, 50, 160,16);
+	qgui_print(22, 54, "Famas");
+	
+	qgui_button(20, 70, 160,16);
+	qgui_print(22, 74, "Scout");
 
+	qgui_button(20, 90, 160,16);
+	qgui_print(22, 94, "M4A1");
 
-
-M_DrawTransPic (76, 0, Draw_CachePic ("gfx/rifle.lmp") );
-
-//FAMAS 
-//M4A1 
-//Steyr AUG 
-//AWP 
-
-
-    M_DrawTransPic (76, 40, Draw_CachePic ("gfx/buy/w_famas.lmp") );
-    M_DrawTransPic (76, 78, Draw_CachePic ("gfx/buy/w_m4a1.lmp") );
-    M_DrawTransPic (76, 116, Draw_CachePic ("gfx/buy/w_aug.lmp") );
-    M_DrawTransPic (76, 154, Draw_CachePic ("gfx/buy/w_awp.lmp") );
-
-
-M_DrawTransPic (54, 40 + m_riflesct_cursor * 38,Draw_CachePic( va("gfx/menudot.lmp") ) );
-
-
+	qgui_button(20, 110, 160,16);
+	qgui_print(22, 114, "AUG");		
+	
+	qgui_button(20, 130, 160,16);
+	qgui_print(22, 134, "SG550");	
+	
+	qgui_button(20, 150, 160,16);
+	qgui_print(22, 154, "AWP");	
+	
+	M_DrawTransPic (0, 45 + m_riflesct_cursor * 20,Draw_CachePic( va("gfx/menudot.lmp") ) );
+	switch(m_riflesct_cursor)
+	{
+		case 0:
+			M_DrawTransPic (200, 50 ,Draw_CachePic( va("gfx/vgui/famas.tga") ) );
+			qgui_print(250, 21, "Price: 2050$");
+		break;
+		
+		case 1:
+			M_DrawTransPic (200, 50 ,Draw_CachePic( va("gfx/vgui/scout.tga") ) );
+			qgui_print(250, 21, "Price: 2750$");
+		break;
+		
+		case 2:
+			M_DrawTransPic (200, 50 ,Draw_CachePic( va("gfx/vgui/m4a1.tga") ) );
+			qgui_print(250, 21, "Price: 3100$");
+		break;
+		
+		case 3:
+			M_DrawTransPic (200, 50 ,Draw_CachePic( va("gfx/vgui/aug.tga") ) );
+			qgui_print(250, 21, "Price: 3500$");
+		break;
+		
+		case 4:
+			M_DrawTransPic (200, 50 ,Draw_CachePic( va("gfx/vgui/sg550.tga") ) );
+			qgui_print(250, 21, "Price: 3500$");
+		break;
+		
+		case 5:
+			M_DrawTransPic (200, 50 ,Draw_CachePic( va("gfx/vgui/awp.tga") ) );
+			qgui_print(250, 21, "Price: 4750$");
+		break;
+	}
 }
 
 
@@ -1694,17 +1807,21 @@ void M_Riflesct_Key (int key)
 				break;
 
 		case 1:
-		Cbuf_AddText ("impulse 45\n"); 
+		//Cbuf_AddText ("impulse xx\n"); //scout
 				break;
 
 		case 2:
-		Cbuf_AddText ("impulse 82\n"); 
+		Cbuf_AddText ("impulse 45\n"); 
 				break;
 		case 3:
-		Cbuf_AddText ("impulse 46\n"); 
+		Cbuf_AddText ("impulse 85\n"); 
 				break;
-
-
+		case 4:
+		//Cbuf_AddText ("impulse xx\n"); sg550
+				break;
+		case 5:
+		Cbuf_AddText ("impulse 46\n"); 
+				break;										
 		}
 	}
 }
