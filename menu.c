@@ -1,4 +1,3 @@
-
 /*
 Copyright (C) 1996-1997 Id Software, Inc.
 
@@ -3014,15 +3013,15 @@ void M_Options_Draw (void)
 	float d;
 
 
-	M_Print (142, 32+(OPT_CUSTOMIZE*8), "        Customize controls");
-	M_Print (142, 32+(OPT_CONSOLE*8),   "        Go to console");
-	M_Print (142, 32+(OPT_DEFAULTS*8),  "        Default  Control");
-	M_Print (142, 32+(OPT_ANOTHERCFG*8),"        Alternative control");
+	M_Print (16, 32+(OPT_CUSTOMIZE*8), "        Customize controls");
+	M_Print (16, 32+(OPT_CONSOLE*8),   "        Go to console");
+	M_Print (16, 32+(OPT_DEFAULTS*8),  "        Default  Control");
+	M_Print (16, 32+(OPT_ANOTHERCFG*8),"        Alternative control");
 	switch (m_submenu) {
         case 0:    
 			M_Print (16, 32+(OPT_CRHAIR*8),   "        Crosshair");
 			r = crosshair.value * 0.16;
-			M_DrawSlider (220, 32+(OPT_CRHAIR*8), r);
+			M_DrawSlider (232, 32+(OPT_CRHAIR*8), r);
 			
 			M_Print (16, 32+(OPT_CRCOLOR*8),  "        Crosshair Color");
 			r = crosshaircolor.value;
@@ -3030,53 +3029,53 @@ void M_Options_Draw (void)
 		
 			M_Print (16, 32+(OPT_GAMMA*8), 	  "        Brightness");
 			r = (1.0 - v_gamma.value) / 0.5;
-			M_DrawSlider (220, 32+(OPT_GAMMA*8), r);
+			M_DrawSlider (232, 32+(OPT_GAMMA*8), r);
 	
 		
 			M_Print (16, 32+(OPT_SNDVOL*8),   "        Sound Volume");
 			r = volume.value;
-			M_DrawSlider (220, 32+(OPT_SNDVOL*8), r);
+			M_DrawSlider (232, 32+(OPT_SNDVOL*8), r);
 		
             break;
         case 1:
 		    
-			M_Print (16, 32+(OPT_IN_SPEED*8), 		 "           A-Nub Speed");
+			M_Print (16, 32+(OPT_IN_SPEED*8), 		 "        A-Nub Speed");
 
 			r = (in_sensitivity.value - 1)/10;
-			M_DrawSlider (220, 32+(OPT_IN_SPEED*8), r);
+			M_DrawSlider (232, 32+(OPT_IN_SPEED*8), r);
 
-			M_Print (16, 32+(OPT_IN_ACCELERATION*8), "    A-Nub Acceleration");
+			M_Print (16, 32+(OPT_IN_ACCELERATION*8), "        A-Nub Acceleration");
 			r = 1.0f -((in_acceleration.value - 0.5f)/1.5f);
-			M_DrawSlider (220, 32+(OPT_IN_ACCELERATION*8), r);
+			M_DrawSlider (232, 32+(OPT_IN_ACCELERATION*8), r);
 
-			M_Print (16, 32+(OPT_IN_TOLERANCE*8), 	 "      A-Nub Tollerance");
+			M_Print (16, 32+(OPT_IN_TOLERANCE*8), 	 "        A-Nub Tollerance");
 			r = (in_tolerance.value )/1.0f;
-			M_DrawSlider (220, 32+(OPT_IN_TOLERANCE*8), r);
+			M_DrawSlider (232, 32+(OPT_IN_TOLERANCE*8), r);
 		
-			M_Print (16, 32+(OPT_IN_X_ADJUST*8), 	 "         Adjust Axis X");	
+			M_Print (16, 32+(OPT_IN_X_ADJUST*8), 	 "        Adjust Axis X");	
 			r = (128+in_x_axis_adjust.value)/255;
-			M_DrawSlider (220, 32+(OPT_IN_X_ADJUST*8), r);
+			M_DrawSlider (232, 32+(OPT_IN_X_ADJUST*8), r);
 
-			M_Print (16, 32+(OPT_IN_Y_ADJUST*8), 	 "         Adjust Axis Y");	
+			M_Print (16, 32+(OPT_IN_Y_ADJUST*8), 	 "        Adjust Axis Y");	
 			r = (128+in_y_axis_adjust.value)/255;
-			M_DrawSlider (220, 32+(OPT_IN_Y_ADJUST*8), r);
+			M_DrawSlider (232, 32+(OPT_IN_Y_ADJUST*8), r);
 		
 		
 		#ifdef PSP
-			M_Print (16, 32+(OPT_INVMOUSE*8),        "          Invert A-Nub");
+			M_Print (16, 32+(OPT_INVMOUSE*8),        "        Invert A-Nub");
 		#else
 			M_Print (16, 32+(OPT_INVMOUSE*8),        "          Invert Mouse");
 		#endif
-			M_DrawCheckbox (220, 32+(OPT_INVMOUSE*8), m_pitch.value < 0);
+			M_DrawCheckbox (224, 32+(OPT_INVMOUSE*8), m_pitch.value < 0);
 		
-			M_Print (16, 32+(OPT_MOUSELOOK*8),       "            A-Nub Look");
-			M_DrawCheckbox (220, 32+(OPT_MOUSELOOK*8), in_analog_freelook.value);
+			M_Print (16, 32+(OPT_MOUSELOOK*8),       "        A-Nub Look");
+			M_DrawCheckbox (224, 32+(OPT_MOUSELOOK*8), in_analog_freelook.value);
 
 		////	M_Print (16, 32+(OPT_NOMOUSE*8),         "         Disable A-Nub");
 		//	M_DrawCheckbox (220, 32+(OPT_NOMOUSE*8), in_disable_analog.value );
 		
-			M_Print (16, 32+(OPT_MOUSESTAFE*8),		 "         A-Nub Stafing");
-			M_DrawCheckbox (220, 32+(OPT_MOUSESTAFE*8), in_analog_strafe.value );
+			M_Print (16, 32+(OPT_MOUSESTAFE*8),		 "        A-Nub Stafing");
+			M_DrawCheckbox (224, 32+(OPT_MOUSESTAFE*8), in_analog_strafe.value );
 			break;
 	}
 	
@@ -3093,7 +3092,7 @@ void M_Options_Draw (void)
             break;
         }                         	
 	// Cursor
-	M_DrawCharacter (200, 32 + options_cursor*8, 12+((int)(realtime*4)&1));
+	M_DrawCharacter (64, 32 + options_cursor*8, 12+((int)(realtime*4)&1));
 }
 
 
