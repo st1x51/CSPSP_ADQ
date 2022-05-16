@@ -1025,7 +1025,9 @@ void Mod_LoadFaces (lump_t *l)
 
 		if( out->texinfo->flags & TEX_SPECIAL )
 			out->flags |= SURF_DRAWTILED;
-
+			
+		if( !strncmp( out->texinfo->texture->name, "{", 1 )) // transparent surface
+			out->flags |= SURF_TRANSPARENT;
 		CalcSurfaceExtents (out);
 				
 	// lighting info
@@ -1058,7 +1060,6 @@ void Mod_LoadFaces (lump_t *l)
 				out->texturemins[i] = -8192;
 			}
             GL_Surface (out);	// Don't cut up polygon for warps
-          //GL_SubdivideSurface (out);	// cut up polygon for warps
 			continue;
 		}
 

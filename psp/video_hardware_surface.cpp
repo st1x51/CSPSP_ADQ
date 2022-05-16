@@ -954,6 +954,8 @@ void R_DrawBrushModel (entity_t *e)
 	mplane_t	*pplane;
 	model_t		*clmodel;
 	qboolean	rotated;
+	int		old_rendermode;
+
 	currententity = e;
 	currenttexture = -1;
 
@@ -977,7 +979,7 @@ void R_DrawBrushModel (entity_t *e)
 
 	if (R_CullBox (mins, maxs))
 		return;
-
+	old_rendermode = e->rendermode;
 	memset (lightmap_polys, 0, sizeof(lightmap_polys));
 
 	VectorSubtract (r_refdef.vieworg, e->origin, modelorg);
@@ -1013,7 +1015,7 @@ void R_DrawBrushModel (entity_t *e)
 	sceGumPushMatrix();
 
 	//Crow_bar half_life render.
-	if (ISADDITIVE(e))
+	if (e->rendermode == kRenderTransAdd)
 	{
 		float deg = e->renderamt / 255.0f;
 		float alpha1 = deg;
@@ -1028,30 +1030,31 @@ void R_DrawBrushModel (entity_t *e)
 		GU_COLOR(alpha1,alpha1,alpha1,alpha1),
 		GU_COLOR(alpha2,alpha2,alpha2,alpha2));
 	}
-    else if (ISSOLID(e))
+    else if (e->rendermode == kRenderTransAlpha)
     {
 		sceGuEnable(GU_ALPHA_TEST);
 		sceGuTexFunc(GU_TFX_MODULATE, GU_TCC_RGBA);
 	}
-	else if (ISGLOW(e))
+	else if (e->rendermode == kRenderGlow)
 	{
         sceGuEnable(GU_BLEND);
 		sceGuTexFunc(GU_TFX_MODULATE, GU_TCC_RGBA);
         sceGuColor(GU_RGBA(255, 255, 255, int(e->renderamt)));
     }
-    else if (ISTEXTURE(e))
+    else if (e->rendermode == kRenderTransTexture)
 	{
 		float deg =  e->renderamt / 255.0f;
 		float alpha1 = deg;
 	    float alpha2 = 1 - deg;
-		sceGuDepthMask(GU_TRUE);
+	    if(deg <= 0.7)
+			sceGuDepthMask(GU_TRUE);
         sceGuEnable(GU_BLEND);
 		sceGuBlendFunc(GU_ADD, GU_FIX, GU_FIX, GU_COLOR(alpha1,alpha1,alpha1,alpha1), GU_COLOR(alpha2,alpha2,alpha2,alpha2));
 		sceGuTexFunc(GU_TFX_MODULATE, GU_TCC_RGBA);
 		sceGuColor(GU_RGBA(255, 255, 255, int(e->renderamt))); 
 
     }
-	else if (ISCOLOR(e))
+	else if (e->rendermode == kRenderTransColor)
 	{
 		sceGuTexFunc(GU_TFX_MODULATE, GU_TCC_RGBA);
 		sceGuColor(GU_RGBA(int(e->rendercolor[0]), int(e->rendercolor[1]), int(e->rendercolor[2]), int(e->renderamt)));
@@ -1084,24 +1087,23 @@ void R_DrawBrushModel (entity_t *e)
 				R_RenderBrushPoly (psurf);
 		}
 	}
-
 	
-	if (!ISADDITIVE(e) )
+	if (e->rendermode != kRenderTransAdd )
     {
-        if(ISSOLID(e))
+        if(e->rendermode == kRenderTransAlpha)
         {
 		  sceGuDepthFunc( GU_EQUAL );
         }
-		if(!ISTEXTURE(e))
-		R_BlendLightmaps ();
+		if(e->rendermode != kRenderTransTexture)
+			R_BlendLightmaps ();
 
-		if(ISSOLID(e))
+		if(e->rendermode == kRenderTransAlpha)
         {
 		  sceGuDepthFunc( GU_LEQUAL );
         }
 	}
 	
-	if (ISADDITIVE(e))
+	if (e->rendermode == kRenderTransAdd)
 	{
         float deg = e->renderamt / 255.0f;
 
@@ -1112,19 +1114,19 @@ void R_DrawBrushModel (entity_t *e)
 		sceGuBlendFunc(GU_ADD, GU_SRC_ALPHA, GU_ONE_MINUS_SRC_ALPHA, 0, 0);
         sceGuDisable (GU_BLEND);
 	}
-	else if(ISSOLID(e))
+	else if(e->rendermode == kRenderTransAlpha)
 	{
         sceGuAlphaFunc(GU_GREATER, 0, 0xff);
         sceGuTexFunc(GU_TFX_REPLACE, GU_TCC_RGB);
      	sceGuDisable(GU_ALPHA_TEST);
 	}
-    else if(ISGLOW(e))
+    else if(e->rendermode == kRenderGlow)
     {
         sceGuColor(0xffffffff);
         sceGuTexFunc(GU_TFX_REPLACE, GU_TCC_RGB);
         sceGuDisable (GU_BLEND);
     }
-    else if(ISTEXTURE(e))
+    else if(e->rendermode == kRenderTransTexture)
     {
         sceGuColor(0xffffffff);
         sceGuTexFunc(GU_TFX_REPLACE, GU_TCC_RGB);
@@ -1132,12 +1134,12 @@ void R_DrawBrushModel (entity_t *e)
 		sceGuDepthMask(GU_FALSE);
 		sceGuBlendFunc(GU_ADD, GU_SRC_ALPHA, GU_ONE_MINUS_SRC_ALPHA, 0, 0);
     }
-    else if(ISCOLOR(e))
+    else if(e->rendermode == kRenderTransColor)
     {
         sceGuColor(0xffffffff);
         sceGuTexFunc(GU_TFX_REPLACE, GU_TCC_RGB);
     }
-	
+	e->rendermode = old_rendermode;
 	clipping::end_brush_model();
 
 	sceGumPopMatrix();

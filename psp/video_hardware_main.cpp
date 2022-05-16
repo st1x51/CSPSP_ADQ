@@ -344,8 +344,8 @@ mspriteframe_t *R_GetSpriteFrame (entity_t *currententity)
 
 	return pspriteframe;
 }
-
-qboolean R_SpriteGlow(vec3_t org, float *alpha, float *scale)
+/*
+qboolean R_SpriteGlow(vec3_t org, float *alpha, float *scale,int renderfx)
 {
 	float	dist, dist2;
 	vec3_t	glowDist;
@@ -359,59 +359,100 @@ qboolean R_SpriteGlow(vec3_t org, float *alpha, float *scale)
 	SV_RecursiveHullCheck (cl.worldmodel->hulls, 0, 0, 1, r_refdef.vieworg, org, &trace);
 
 	dist2 = VectorLength2( r_refdef.vieworg ,trace.endpos );
-	if(( 1.0f - dist2 ) * dist > 8 )
+	if(trace.fraction > 0)
 	{
-		Con_Printf("dist fuck out %f\n", dist2);
+		//*alpha = 0.0f;
 		return qtrue;
-    }
-
+	}
+		
 	*alpha = 19000.0 / ( dist * dist );
 	*alpha = bound( 0.01f, *alpha, 1.0f );
 
-	if( *alpha <= 0.01f )
-	{
-       // Con_Printf("Alpha fuck out\n");
-		return qtrue;
-    }
+	if( renderfx == kRenderFxNoDissipation )
+		return qfalse;
 	// make the glow fixed size in screen space, taking into consideration the scale setting.
 	if( *scale == 0.0f )
 	    *scale = 1.0f;
 
-	*scale *= dist * ( 1.0f / bound( 100.0f, /*r_flaresize->value*/200, 300.0f ));
+	*scale *= dist * ( 1.0f / bound( 100.0f, 200, 300.0f ));
 
 	return qfalse;
 }
+*/
+/*
+================
+R_GlowSightDistance
 
+Set sprite brightness factor
+================
+*/
+static float R_SpriteGlowBlend( vec3_t origin, int rendermode, int renderfx, float *scale )
+{
+	float	dist, brightness;
+	vec3_t	glowDist;
+	trace_t	trace;
+	VectorSubtract( origin, r_refdef.vieworg, glowDist );
+	dist = VectorLength( glowDist );
+	trace.fraction = 1;
+	SV_RecursiveHullCheck (cl.worldmodel->hulls, 0, 0, 1,r_refdef.vieworg, origin, &trace);
+	if(( 1.0f - trace.fraction ) * dist > 8.0f )
+		return 0.0f;
+
+	if( renderfx == kRenderFxNoDissipation )
+		return 1.0f;
+
+	brightness = 19000.0f / ( dist * dist );
+	brightness = bound( 0.05f, brightness, 1.0f );
+	*scale *= dist * ( 1.0f / 200.0f );
+
+	return brightness;
+}
+/*
+================
+R_SpriteOccluded
+
+Do occlusion test for glow-sprites
+================
+*/
+qboolean R_SpriteOccluded( entity_t *e, vec3_t origin, float *pscale,float *alpha)
+{
+	if( e->rendermode == kRenderGlow )
+	{
+		float	blend;
+		blend = R_SpriteGlowBlend( origin, e->rendermode, e->renderfx, pscale );
+		*alpha *= blend;
+
+		if( blend <= 0.01f )
+			return qtrue; // faded
+	}
+	/*
+	else
+	{
+		if( R_CullSpriteModel( e, origin ))
+			return true;
+	}
+	*/
+	return qfalse;
+}
 /*
 =================
 R_DrawSpriteModel
 
 =================
 */
-extern "C" void TraceLine (vec3_t start, vec3_t end, vec3_t impact);
+
 void R_DrawSpriteModel (entity_t *e)
 {
 	int             i;
 	mspriteframe_t  *frame;
 	float		    angle, dot, sr, cr, scale=1.0f, alpha=1.0f;
-	vec3_t		    v_forward, v_right, v_up, point;
+	vec3_t		    v_forward, v_right, v_up, point,color;
 	msprite_t	    *psprite;
 
 	// don't even bother culling, because it's just a single
 	// polygon without a surface cache
 	frame = R_GetSpriteFrame (e);
 	psprite = static_cast<msprite_t*>(currententity->model->cache.data);
-	
-	//alpha = e->renderamt * (1.0f / 255.0f);
-	//if(alpha <= 0)
-	//  alpha  = 1.0f;
-
-	if(ISGLOW(e))
-	   if(R_SpriteGlow(currententity->origin, &alpha, &scale))
-	      return;
-
-	alpha *= 255.0f;
-
 #if 0
 	if (psprite->type == SPR_ORIENTED)
 	{	// bullet marks on walls
@@ -469,34 +510,55 @@ void R_DrawSpriteModel (entity_t *e)
 #endif
 	// Bind the texture.
 	GL_Bind(frame->gl_texturenum);
+	alpha = (int)e->renderamt;
+	
+	if( R_SpriteOccluded( currententity, currententity->origin, &scale,&alpha))
+		return; // sprite culled
 
-	sceGuEnable(GU_BLEND);
-	sceGuEnable(GU_ALPHA_TEST);
-	sceGuAlphaFunc(GU_GREATER, 0, 0xff); 
+	// select properly rendermode
+	switch((int)currententity->rendermode)
+	{
+	case kRenderTransAlpha:
+		sceGuDepthMask( GU_TRUE );
+		// fallthrough
+	case kRenderTransColor:
+	case kRenderTransTexture:
+		sceGuEnable( GU_BLEND );
+		sceGuBlendFunc( GU_ADD, GU_SRC_ALPHA, GU_ONE_MINUS_SRC_ALPHA, 0, 0 );
+		break;
+	case kRenderGlow:
+		sceGuDisable( GU_DEPTH_TEST );
+		// fallthrough
+	case kRenderTransAdd:
+		sceGuEnable( GU_BLEND );
+		sceGuBlendFunc( GU_ADD, GU_SRC_ALPHA, GU_FIX, 0, 0xffffff );
+		sceGuDepthMask( GU_TRUE );
+		break;
+	case kRenderNormal:
+	default:
+		sceGuDisable( GU_BLEND );
+		break;
+	}
 
-	if(ISCOLOR(e) || ISADDITIVE(e) || ISTEXTURE(e))
+	// all sprites can have color
+	sceGuTexFunc(GU_TFX_MODULATE , GU_TCC_RGBA);
+	sceGuEnable( GU_ALPHA_TEST );
+
+	// NOTE: never pass sprites with rendercolor '0 0 0' it's a stupid Valve Hammer Editor bug
+	
+	if( currententity->rendercolor[0] || currententity->rendercolor[1] || currententity->rendercolor[2] )
 	{
-        sceGuDepthMask(GU_TRUE);
-		sceGuTexFunc(GU_TFX_MODULATE , GU_TCC_RGBA);
-		sceGuColor(GU_RGBA(int(e->rendercolor[0]), int(e->rendercolor[1]), int(e->rendercolor[2]), int(alpha)));
+		color[0] = (float)currententity->rendercolor[0] * ( 1.0f / 255.0f );
+		color[1] = (float)currententity->rendercolor[1] * ( 1.0f / 255.0f );
+		color[2] = (float)currententity->rendercolor[2] * ( 1.0f / 255.0f );
 	}
-	else if(ISSOLID(e))
+	else
 	{
-        sceGuDepthMask(GU_TRUE);
-		sceGuTexFunc(GU_TFX_MODULATE , GU_TCC_RGBA);
-		sceGuBlendFunc(GU_ADD, GU_SRC_ALPHA, GU_ONE_MINUS_DST_ALPHA, 0, 0);
-		sceGuColor(GU_RGBA(255, 255, 255, int(alpha)));
+		color[0] = 1.0f;
+		color[1] = 1.0f;
+		color[2] = 1.0f;
 	}
-	else if(ISGLOW(e) )
-	{
-        sceGuDepthMask(GU_TRUE);
-        sceGuTexFunc(GU_TFX_MODULATE , GU_TCC_RGBA);
-		sceGuColor(GU_RGBA(255, 255, 255, int(alpha)));
-	}
-    else
-    {
-        sceGuTexFunc(GU_TFX_REPLACE, GU_TCC_RGBA);
-	}
+	sceGuColor(GU_RGBA(int(e->rendercolor[0]), int(e->rendercolor[1]), int(e->rendercolor[2]), int(alpha)));
 
 	// Allocate memory for this polygon.
 	glvert_t* const	vertices =
@@ -546,21 +608,14 @@ void R_DrawSpriteModel (entity_t *e)
 		GU_TEXTURE_32BITF | GU_VERTEX_32BITF,
 		4, 0, vertices);
 
-    if(ISCOLOR(e) || ISADDITIVE(e) || ISTEXTURE(e) || ISGLOW(e))
-    {
-	   sceGuDepthMask(GU_FALSE);
-	   sceGuColor(0xffffffff);
+	sceGuDisable( GU_ALPHA_TEST );
+	sceGuDepthMask( GU_FALSE );
+	if((int)currententity->rendermode != kRenderNormal )
+	{
+		sceGuDisable( GU_BLEND );
+		sceGuTexFunc( GU_TFX_REPLACE, GU_TCC_RGBA );
+		sceGuEnable( GU_DEPTH_TEST );
 	}
-    else if(ISSOLID(e))
-    {
-	   sceGuDepthMask(GU_FALSE);
-	   sceGuBlendFunc(GU_ADD, GU_SRC_ALPHA, GU_ONE_MINUS_SRC_ALPHA, 0, 0);
-	   sceGuColor(0xffffffff);
-    }
-
-	sceGuTexFunc(GU_TFX_REPLACE, GU_TCC_RGB);
-	sceGuDisable(GU_BLEND);
-	sceGuDisable(GU_ALPHA_TEST);
 }
 
 /*

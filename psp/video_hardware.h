@@ -34,6 +34,41 @@ void GL_GetTexfSize (int *w, int *h, int index);
 
 extern	int glx, gly, glwidth, glheight;
 
+// Rendering constants
+enum
+{
+	kRenderNormal,		//RENDER_NORMAL
+	kRenderTransColor,		//RENDER_COLOR
+	kRenderTransTexture,	//RENDER_TEXTURE
+	kRenderGlow,		//RENDER_GLOW
+	kRenderTransAlpha,		//RENDER_SOLID
+	kRenderTransAdd,		//RENDER_ADDITIVE
+};
+
+enum
+{
+	kRenderFxNone = 0,
+	kRenderFxPulseSlow,
+	kRenderFxPulseFast,
+	kRenderFxPulseSlowWide,
+	kRenderFxPulseFastWide,
+	kRenderFxFadeSlow,
+	kRenderFxFadeFast,
+	kRenderFxSolidSlow,
+	kRenderFxSolidFast,
+	kRenderFxStrobeSlow,
+	kRenderFxStrobeFast,
+	kRenderFxStrobeFaster,
+	kRenderFxFlickerSlow,
+	kRenderFxFlickerFast,
+	kRenderFxNoDissipation,
+	kRenderFxDistort,			// Distort/scale/translate flicker
+	kRenderFxHologram,			// kRenderFxDistort + distance fade
+	kRenderFxDeadPlayer,		// kRenderAmt is the player index
+	kRenderFxExplode,			// Scale up really big!
+	kRenderFxGlowShell,			// Glowing Shell
+	kRenderFxClampMinScale,		// Keep this sprite from getting very small (SPRITES only!)
+};
 // r_local.h -- private refresh defs
 
 // Palette formats

@@ -731,7 +731,8 @@ static void R_DecalNodeSurfaces( model_t *model, mnode_t *node, decalinfo_t *dec
 		// never apply decals on the water or sky surfaces
 		if( surf->flags & (SURF_DRAWTURB|SURF_DRAWSKY|SURF_CONVEYOR))
 			continue;
-
+		if(surf->flags & SURF_TRANSPARENT)
+			continue;
 		R_DecalSurface( surf, decalinfo );
 	}
 }
@@ -986,47 +987,92 @@ void DrawSurfaceDecals( msurface_t *fa )
 	if( !fa->pdecals ) return;
 
 	e = currententity;
-
-	if( !ISADDITIVE(e) && !ISGLOW(e) && !ISTEXTURE(e) )
+	if( e->rendermode == kRenderNormal || e->rendermode == kRenderTransAlpha )
 	{
+		sceGuDepthMask( GU_TRUE );
 		sceGuEnable( GU_BLEND );
+
+		if( e->rendermode == kRenderTransAlpha )
+			sceGuDisable( GU_ALPHA_TEST );
 	}
-	
-	sceGuDepthMask( GU_TRUE );
 
-    sceGuDepthOffset(-256);
-    sceGuBlendFunc(GU_ADD, GU_ONE_MINUS_SRC_ALPHA, GU_SRC_COLOR, 0, 0);
+	if( e->rendermode == kRenderTransColor )
+		sceGuEnable( GU_TEXTURE_2D );
 
+	//if( e->curstate.rendermode == kRenderTransTexture || e->curstate.rendermode == kRenderTransAdd )
+	//	GL_Cull( GL_NONE );
+	if( e->rendermode == kRenderTransTexture )
+		return;
+	sceGuDepthOffset(-256);
+
+	if( fa->flags & SURF_TRANSPARENT )
+	{
+		sceGuEnable( GU_STENCIL_TEST );
+		
+		mtexinfo_t	*tex = fa->texinfo;
+
+		for( p = fa->pdecals; p; p = p->pnext )
+		{
+			if( p->texture )
+			{
+				glvert_t   *o,*v;
+				int i, numVerts;
+				o = R_DecalSetupVerts( p, fa, p->texture, &numVerts );
+
+				sceGuEnable( GU_STENCIL_TEST );
+				sceGuStencilFunc( GU_ALWAYS, 1, 0xffffffff );
+				sceGuPixelMask( 0xffffffff );
+
+				sceGuStencilOp( GU_KEEP, GU_KEEP, GU_REPLACE );
+				glvert_t* out = static_cast<glvert_t*>(sceGuGetMemory(sizeof(glvert_t) * numVerts));
+				for( i = 0; i < numVerts; i++)
+				{
+					out[i].st[0]  = v[i].st[0];
+					out[i].st[1]  = v[i].st[1];
+					out[i].xyz[0] = v[i].xyz[0];
+					out[i].xyz[1] = v[i].xyz[1];
+					out[i].xyz[2] = v[i].xyz[2];
+				}
+				sceGuDrawArray(GU_TRIANGLE_FAN, GU_TEXTURE_32BITF | GU_VERTEX_32BITF, numVerts, 0, out);
+
+
+				sceGuPixelMask( 0x00000000 );
+				sceGuStencilFunc( GU_EQUAL, 0, 0xffffffff );
+				sceGuStencilOp( GU_KEEP, GU_KEEP, GU_KEEP );
+			}
+		}
+		
+	}
+
+	sceGuBlendFunc(GU_ADD, GU_ONE_MINUS_SRC_ALPHA, GU_SRC_COLOR, 0, 0);
 	for( p = fa->pdecals; p; p = p->pnext )
 		DrawSingleDecal( p, fa );
-
-    sceGuDepthOffset(0);
-
-	if(!ISADDITIVE(e) && !ISGLOW(e) && !ISTEXTURE(e))
+		
+	if( fa->flags & SURF_TRANSPARENT )
+		sceGuDisable( GU_STENCIL_TEST );
+		
+	if( e->rendermode == kRenderNormal || e->rendermode == kRenderTransAlpha )
 	{
-        sceGuDepthMask( GU_FALSE );
+		sceGuDepthMask( GU_FALSE );
 		sceGuDisable( GU_BLEND );
+
+		if( e->rendermode == kRenderTransAlpha )
+			sceGuEnable( GU_ALPHA_TEST );
 	}
 
-    if(ISADDITIVE(e))
-    {
-		float deg = e->renderamt / 255.0f;
-		float alpha1 = deg;
-	    float alpha2 = 1 - deg;
+	sceGuDepthOffset( 0 );
 
-		if(deg <= 0.7)
-           sceGuDepthMask(GU_TRUE);
+	//if( e->curstate.rendermode == kRenderTransTexture || e->curstate.rendermode == kRenderTransAdd )
+	//	GL_Cull( GL_FRONT );
 
-		sceGuEnable (GU_BLEND);
-		sceGuTexFunc(GU_TFX_MODULATE, GU_TCC_RGBA);
-        sceGuBlendFunc(GU_ADD, GU_FIX, GU_FIX,
-		GU_COLOR(alpha1,alpha1,alpha1,alpha1),
-		GU_COLOR(alpha2,alpha2,alpha2,alpha2));
-	}
-	else
-	{
-	   sceGuBlendFunc(GU_ADD, GU_SRC_ALPHA, GU_ONE_MINUS_SRC_ALPHA, 0, 0);
-    }
+	if( e->rendermode == kRenderTransColor )
+		sceGuDisable( GU_TEXTURE_2D );
+
+	// restore blendfunc here
+	if( e->rendermode == kRenderTransAdd || e->rendermode == kRenderGlow )
+		sceGuBlendFunc( GU_ADD, GU_SRC_ALPHA, GU_FIX, 0, 0xffffff );
+	sceGuTexFunc( GU_TFX_MODULATE, GU_TCC_RGBA );	
+	sceGuBlendFunc(GU_ADD, GU_SRC_ALPHA, GU_ONE_MINUS_SRC_ALPHA, 0, 0);
 }
 
 static int R_DecalGetbyName(char *name)

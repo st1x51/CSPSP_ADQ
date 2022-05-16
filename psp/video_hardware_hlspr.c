@@ -2,7 +2,10 @@
 #include "../quakedef.h"
 #include <malloc.h>
 #include <pspgu.h>
-
+#define SPR_NORMAL					0
+#define SPR_ADDITIVE				1
+#define SPR_INDEXALPHA				2
+#define SPR_ALPHATEST				3
 extern model_t	*loadmodel;
 extern char	 *loadname[32];
 /*
@@ -125,7 +128,7 @@ void Mod_LoadHLSpriteModel (model_t *mod, dspritehl_t   *pin)
 	dspriteframetype_t	*pframetype;
 	int                 sptype;
 	short               *numi;
-	
+	int 				rendermode;
 	byte pal[256*4];
 
     sptype = LittleLong (pin->type);
@@ -136,7 +139,7 @@ void Mod_LoadHLSpriteModel (model_t *mod, dspritehl_t   *pin)
     mod->cache.data = psprite;
 	psprite->type = sptype;
 	mod->synctype = LittleLong (pin->synctype);
-
+	rendermode = LittleLong (pin->texFormat);
 	psprite->numframes = numframes;
     psprite->maxwidth = LittleLong (pin->width);
 
@@ -148,15 +151,13 @@ void Mod_LoadHLSpriteModel (model_t *mod, dspritehl_t   *pin)
 	mod->maxs[0] = mod->maxs[1] = psprite->maxwidth/2;
 	mod->mins[2] = -psprite->maxheight/2;
 	mod->maxs[2] = psprite->maxheight/2;
-
     numi = (short *)(pin+1);
     byte *src = (numi + 1);
-
 	if (LittleShort(*numi) != 256)
 	{
 		Host_Error("%s has wrong number of palette indexes (we only support 256)\n", mod->name);
 	}
-
+	
 	for (i = 0; i < 256; i++)
 	{
 		pal[i*4+0] = *src++;
@@ -164,9 +165,10 @@ void Mod_LoadHLSpriteModel (model_t *mod, dspritehl_t   *pin)
 		pal[i*4+2] = *src++;
 		pal[i*4+3] = 255;
 	}
-
+	
+	//Con_Printf("Rendermode: %i",rendermode);
+	
 	pframetype = (dspriteframetype_t *)(src);
-
 
 //
 // load the frames

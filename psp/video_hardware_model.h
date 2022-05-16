@@ -96,7 +96,7 @@ typedef struct texture_s
 #define SURF_DRAWTILED		0x20
 #define SURF_CONVEYOR		0x40		// scrolled texture (was SURF_DRAWBACKGROUND)
 #define SURF_UNDERWATER		0x80
-
+#define SURF_TRANSPARENT	0x100
 // !!! if this is changed, it must be changed in asm_draw.h too !!!
 typedef struct
 {
@@ -441,7 +441,6 @@ typedef struct model_s
 	byte		*lightdata;
 	char		*entities;
 	int			bspversion;
-
 //
 // additional model data
 //
