@@ -17,12 +17,15 @@ extern"C"
 	meshing, and vertex deforms. The rendering loop uses standard Quake 1 drawing, after SetupBones deforms the vertex.
  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  Also, please note that it won't do all hl models....
-  Nor will it work 100%
-++++++++++++++++++++++++++
-  modify by Crow_bar 2009
-  10.08.09
-++++++++++++++++++++++++++
+  	Also, please note that it won't do all hl models....
+  	Nor will it work 100%
+ +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 	modify by Crow_bar 2009
+ 	10.08.09
+ +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	Current semi-working features: sequences and frames from QC(wepsequence and sequence),rendermodes.
+	Missing: Rendering in fog,attachments,events etc.
+ +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 #include "video_hardware_hlmdl.h"
 
@@ -134,6 +137,48 @@ void QuaternionGLAnglePSPVFPU(ScePspQuatMatrix *res, float x, float y, float z)
 
 	//vfpu_quaternion_normalize(res);
 }
+
+/*
+===============
+StudioSetRenderMode
+set rendermode for studiomodel
+===============
+*/
+void StudioSetRenderMode( int rendermode,entity_t *curent)
+{
+	float deg = curent->renderamt / 255.0f;
+	float alpha1 = deg;
+	float alpha2 = 1 - deg;
+
+	switch( rendermode )
+	{
+	case kRenderNormal:
+		break;
+	case kRenderTransColor:
+		sceGuBlendFunc( GU_ADD, GU_SRC_ALPHA, GU_ONE_MINUS_SRC_ALPHA, 0, 0 );
+		sceGuTexFunc( GU_TFX_MODULATE, GU_TCC_RGBA );
+		sceGuEnable( GU_BLEND );
+		break;
+	case kRenderTransAdd:
+		if(deg <= 0.7)
+           sceGuDepthMask(GU_TRUE);
+
+		sceGuEnable (GU_BLEND);
+		sceGuTexFunc(GU_TFX_MODULATE, GU_TCC_RGBA);
+        sceGuBlendFunc(GU_ADD, GU_FIX, GU_FIX,
+		GU_COLOR(alpha1,alpha1,alpha1,alpha1),
+		GU_COLOR(alpha2,alpha2,alpha2,alpha2));
+		break;
+	default:
+		sceGuTexFunc( GU_TFX_MODULATE, GU_TCC_RGBA );
+		sceGuBlendFunc( GU_ADD, GU_SRC_ALPHA, GU_ONE_MINUS_SRC_ALPHA, 0, 0 );
+		//sceGuColor( GUCOLOR4F( 1.0f, 1.0f, 1.0f, tr.blend ) );
+		sceGuColor(GU_RGBA(255, 255, 255, int(curent->renderamt)));
+		sceGuDepthMask( GU_FALSE );
+		sceGuEnable( GU_BLEND );
+		break;
+	}
+}
 /*
  =======================================================================================================================
     QuaternionGLAngle - Convert a GL angle to a quaternion matrix
@@ -202,16 +247,9 @@ qboolean Mod_LoadHLModel (model_t *mod, void *buffer)
     bonectls = (hlmdl_bonecontroller_t *) ((byte *) header + header->controllerindex);
 
 	model->header = (char *)header - (char *)model;
-   // Con_Printf("HLMDL Load: header");
-
 	model->textures = (char *)tex - (char *)model;
-    //Con_Printf(", tex");
-
 	model->bones = (char *)bones - (char *)model;
-   // Con_Printf(", bones");
-
 	model->bonectls = (char *)bonectls - (char *)model;
-   // Con_Printf(", bonectls\n");
 	int level = 0;
 	if (r_mipmaps.value > 0)
 		level = 3;
@@ -665,11 +703,6 @@ void R_DrawHLModel(entity_t	*curent)
 	model.bones		= (hlmdl_bone_t *)				((char *)modelc + modelc->bones);
 	model.bonectls	= (hlmdl_bonecontroller_t *)	((char *)modelc + modelc->bonectls);
 
-	//specific to entity
-	//model.sequence	= cl.stats[STAT_SEQUENCE]; //not shure about this
-	//model.frame		= 0;
-	//model.frametime	= 0;
-
 	HL_NewSequence(&model, curent->sequence);
 
     skins = (short *) ((byte *) model.header + model.header->skins);
@@ -681,32 +714,20 @@ void R_DrawHLModel(entity_t	*curent)
 	model.controller[2] = curent->bonecontrols[2];
 	model.controller[3] = curent->bonecontrols[3];
 	model.controller[4] = 0;//sin(cl.time)*127+127;
-
-   // model.frametime += (cl.time /* - cl.lerpents[curent->keynum].framechange*/)*sequence->timing;
-	/*
-	if (model.frametime>=1)
-	{
-		model.frame += (int) model.frametime;
-		model.frametime -= (int)model.frametime;
-	}
-*/
+	
 	if (!sequence->numframes)
 		return;
 
-/*
-	if(model.frame >= sequence->numframes)
-		model.frame %= sequence->numframes;
-*/
-		model.frame = curent->frame; // dr_mabuse1981: This makes your Halflife model frame based (only for sequence 0 atm but better than the old shit.)
+	model.frame = curent->frame;
 
 	if (sequence->motiontype)
 		model.frame = sequence->numframes-1;
-
-    sceGuTexFunc(GU_TFX_MODULATE, GU_TCC_RGBA);
-    sceGuShadeModel(GU_SMOOTH);
-
-	//Con_DPrintf("%s %i\n", sequence->name, model.frame);
-
+	sceGuTexFunc(GU_TFX_MODULATE , GU_TCC_RGBA);
+	sceGuShadeModel( GU_SMOOTH );
+	if(!curent->rendermode ||curent->rendermode > kRenderTransAdd)
+		StudioSetRenderMode(0,curent);
+	else
+		StudioSetRenderMode(curent->rendermode,curent); //was kRenderTransAdd 
     sceGumPushMatrix();
 
 	for(int i = 0; i < 3; i++) m_angles[i] = currententity->angles[i];
@@ -807,10 +828,15 @@ void R_DrawHLModel(entity_t	*curent)
 			}
 		}
     }
-    sceGuShadeModel(GU_SMOOTH);
+   // sceGuShadeModel(GU_SMOOTH);
     sceGumPopMatrix();
     sceGumUpdateMatrix();
-    sceGuTexFunc(GU_TFX_REPLACE, GU_TCC_RGBA);
+    //sceGuTexFunc(GU_TFX_REPLACE, GU_TCC_RGBA);
+	if( curent->rendermode != kRenderNormal )
+		sceGuDisable( GU_BLEND );
+
+	sceGuTexFunc( GU_TFX_REPLACE, GU_TCC_RGBA );
+	sceGuShadeModel( GU_FLAT );	
 }
 
 /*

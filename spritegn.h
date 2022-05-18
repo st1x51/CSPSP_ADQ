@@ -72,7 +72,7 @@ typedef enum
 
 } synctype_t;
 #endif
-
+#pragma pack(push, 1)
 // TODO: shorten these?
 typedef struct
 {
@@ -154,6 +154,7 @@ typedef struct
 	int	            facetype;		// cullface (Xash3D ext)
 	synctype_t	    synctype;		// animation synctype
 } dspritehl_t;
+#pragma pack(pop)
 //HL
 
 

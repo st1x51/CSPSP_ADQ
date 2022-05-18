@@ -153,11 +153,12 @@ void Mod_LoadHLSpriteModel (model_t *mod, dspritehl_t   *pin)
 	mod->maxs[2] = psprite->maxheight/2;
     numi = (short *)(pin+1);
     byte *src = (numi + 1);
+
 	if (LittleShort(*numi) != 256)
 	{
 		Host_Error("%s has wrong number of palette indexes (we only support 256)\n", mod->name);
 	}
-	
+
 	for (i = 0; i < 256; i++)
 	{
 		pal[i*4+0] = *src++;
@@ -165,10 +166,9 @@ void Mod_LoadHLSpriteModel (model_t *mod, dspritehl_t   *pin)
 		pal[i*4+2] = *src++;
 		pal[i*4+3] = 255;
 	}
-	
-	//Con_Printf("Rendermode: %i",rendermode);
-	
+
 	pframetype = (dspriteframetype_t *)(src);
+
 
 //
 // load the frames
@@ -177,6 +177,7 @@ void Mod_LoadHLSpriteModel (model_t *mod, dspritehl_t   *pin)
 	if (numframes < 1)
 	{
 		Con_Printf ("Mod_LoadSpriteModel: Invalid # of frames: %d\n", numframes);
+		return;
 	}
 
 	mod->numframes = numframes;
@@ -184,7 +185,6 @@ void Mod_LoadHLSpriteModel (model_t *mod, dspritehl_t   *pin)
 	for (i=0 ; i<numframes ; i++)
 	{
 		spriteframetype_t	frametype;
-
 		frametype = LittleFloat(pframetype->type);
 		psprite->frames[i].type = frametype;
 

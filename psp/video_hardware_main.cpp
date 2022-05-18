@@ -429,7 +429,7 @@ qboolean R_SpriteOccluded( entity_t *e, vec3_t origin, float *pscale,float *alph
 	else
 	{
 		if( R_CullSpriteModel( e, origin ))
-			return true;
+			return qtrue;
 	}
 	*/
 	return qfalse;
@@ -558,6 +558,7 @@ void R_DrawSpriteModel (entity_t *e)
 		color[1] = 1.0f;
 		color[2] = 1.0f;
 	}
+	
 	sceGuColor(GU_RGBA(int(e->rendercolor[0]), int(e->rendercolor[1]), int(e->rendercolor[2]), int(alpha)));
 
 	// Allocate memory for this polygon.
