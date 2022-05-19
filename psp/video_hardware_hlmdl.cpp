@@ -702,7 +702,7 @@ void R_DrawHLModel(entity_t	*curent)
 	model.textures	= (hlmdl_tex_t *)				((char *)modelc + modelc->textures);
 	model.bones		= (hlmdl_bone_t *)				((char *)modelc + modelc->bones);
 	model.bonectls	= (hlmdl_bonecontroller_t *)	((char *)modelc + modelc->bonectls);
-
+	
 	HL_NewSequence(&model, curent->sequence);
 
     skins = (short *) ((byte *) model.header + model.header->skins);
@@ -720,8 +720,8 @@ void R_DrawHLModel(entity_t	*curent)
 
 	model.frame = curent->frame;
 
-	if (sequence->motiontype)
-		model.frame = sequence->numframes-1;
+	//if (sequence->motiontype)
+	//	model.frame = sequence->numframes-1;
 	sceGuTexFunc(GU_TFX_MODULATE , GU_TCC_RGBA);
 	sceGuShadeModel( GU_SMOOTH );
 	if(!curent->rendermode ||curent->rendermode > kRenderTransAdd)
