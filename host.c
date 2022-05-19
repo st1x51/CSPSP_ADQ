@@ -43,7 +43,7 @@ int			host_framecount;
 int			host_hunklevel;
 
 int			minimum_memory;
-
+int			fps_count;
 client_t	*host_client;			// current client
 
 jmp_buf 	host_abortserver;
@@ -77,7 +77,7 @@ cvar_t	coop = {"coop","0"};			// 0 or 1
 cvar_t	pausable = {"pausable","1"};
 
 cvar_t	temp1 = {"temp1","0"};
-
+cvar_t	show_fps = {"show_fps","1"};	// set for running times - muff
 qboolean bmg_type_changed = false;
 
 
@@ -228,7 +228,7 @@ void Host_InitLocal (void)
 	Cvar_RegisterVariable (&pausable);
 
 	Cvar_RegisterVariable (&temp1);
-
+	Cvar_RegisterVariable (&show_fps); // muff fps
 	Host_FindMaxClients ();
 	
 	host_time = 1.0;		// so a think at time 0 won't get called
@@ -729,7 +729,7 @@ void _Host_Frame (float time)
 		Con_Printf ("%3i tot %3i server %3i gfx %3i snd\n",
 					pass1+pass2+pass3, pass1, pass2, pass3);
 	}
-	
+	fps_count++;//muff fps
 	host_framecount++;
 }
 

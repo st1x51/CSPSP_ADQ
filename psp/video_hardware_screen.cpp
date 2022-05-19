@@ -483,7 +483,48 @@ void SCR_DrawPause (void)
 		(vid.height - 48 - pic->height)/2, pic);
 }
 
+/*
+//muff - hacked out of SourceForge implementation + modified
+==============
+SCR_DrawFPS
+==============
+*/
+void SCR_DrawFPS (void)
+{
+	extern cvar_t show_fps;
+	static double lastframetime;
+	double t;
+	extern int fps_count;
+	static int lastfps;
+	int x, y;
+	char st[80],st1[80];
+	if (!show_fps.value)
+		return;
 
+	t = Sys_FloatTime ();
+	if ((t - lastframetime) >= 1.0)
+	{
+		lastfps = fps_count;
+		fps_count = 0;
+		lastframetime = t;
+	}
+    sprintf(st1,"%3d FPS", lastfps);
+	if(lastfps < 20)
+	   sprintf(st,"%3d", lastfps);
+	else if(lastfps > 20 && lastfps < 40)
+       sprintf(st,"%3d", lastfps);
+	else 
+       sprintf(st,"%3d", lastfps);
+       
+	x = vid.width - strlen(st1) * 16 - 60;
+	y = 0 ; //vid.height - (sb_lines * (vid.height/240) )- 16;
+   
+	//Draw_ColoredString (x, y, st, 0);
+	Draw_FrontText(st, 450,  0, 0xFF0000FF, 0);
+	//Draw_ColoredString ( vid.width / 4, 264, "Alpha Build "__DATE__" ", 0);
+	//"&cF20 C &cF50 r &cF80 o &c883 w &cA85 _ &cA85 b &c668 a &c55A r"
+	//
+}
 
 /*
 ==============
@@ -901,6 +942,7 @@ void SCR_UpdateScreen (void)
 		//SCR_DrawNet ();
 		//SCR_DrawTurtle ();
 		//SCR_DrawPause ();
+		SCR_DrawFPS ();// fps
 		SCR_CheckDrawCenterString ();
 		Hud_Draw ();
 		SCR_DrawConsole ();	
