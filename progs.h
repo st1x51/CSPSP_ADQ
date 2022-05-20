@@ -84,12 +84,8 @@ void ED_WriteGlobals (FILE *f);
 void ED_ParseGlobals (char *data);
 
 void ED_LoadFromFile (char *data);
-
-//define EDICT_NUM(n) ((edict_t *)(sv.edicts+ (n)*pr_edict_size))
-//define NUM_FOR_EDICT(e) (((byte *)(e) - sv.edicts)/pr_edict_size)
-
-edict_t *EDICT_NUM(int n);
-int NUM_FOR_EDICT(edict_t *e);
+#define EDICT_NUM(n) ((edict_t *)((byte *)sv.edicts + pr_edict_size*(n)))
+#define NUM_FOR_EDICT(e) ( ((byte *)(e)-(byte *)sv.edicts ) / pr_edict_size)
 
 #define	NEXT_EDICT(e) ((edict_t *)( (byte *)e + pr_edict_size))
 

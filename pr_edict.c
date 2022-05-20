@@ -1094,7 +1094,7 @@ void PR_Init (void)
 }
 
 
-
+/*
 edict_t *EDICT_NUM(int n)
 {
 	if (n < 0 || n >= sv.max_edicts)
@@ -1113,3 +1113,4 @@ int NUM_FOR_EDICT(edict_t *e)
 		Sys_Error ("NUM_FOR_EDICT: bad pointer");
 	return b;
 }
+*/
