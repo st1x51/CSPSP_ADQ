@@ -834,7 +834,8 @@ void R_DrawHLModel(entity_t	*curent)
     //sceGuTexFunc(GU_TFX_REPLACE, GU_TCC_RGBA);
 	if( curent->rendermode != kRenderNormal )
 		sceGuDisable( GU_BLEND );
-
+	if(curent->rendermode == kRenderTransAdd)
+		sceGuDepthMask( GU_FALSE );
 	sceGuTexFunc( GU_TFX_REPLACE, GU_TCC_RGBA );
 	sceGuShadeModel( GU_FLAT );	
 }
