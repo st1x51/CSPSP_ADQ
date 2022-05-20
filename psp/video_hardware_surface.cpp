@@ -565,7 +565,30 @@ static void DrawGLWaterPolyLightmap (glpoly_t *p)
 	/*glEnd ();*/
 }
 #endif
+qboolean R_HasLightmap( void )
+{
+//	if( CVAR_TO_BOOL( r_fullbright ) || !WORLDMODEL->lightdata )
+//		return false;
+	if (r_fullbright.value)
+		return qfalse;
+	if(currententity)
+	{
+		//if( currententity->effects & EF_FULLBRIGHT )
+			//return qfalse;	// disabled by user
 
+		// check for rendermode
+		switch((int)currententity->rendermode)
+		{
+		case kRenderTransTexture:
+		case kRenderTransColor:
+		case kRenderTransAdd:
+		case kRenderGlow:
+			return qfalse; // no lightmaps
+		}
+	}
+
+	return qtrue;
+}
 /*
 ================
 R_BlendLightmaps
@@ -575,23 +598,21 @@ static void R_BlendLightmaps (void)
 {
 	int			 i;
 	glpoly_t	*p;
-
-	if (r_fullbright.value)
+	if( !R_HasLightmap() )
 		return;
-
-	sceGuDepthMask(GU_TRUE);
-		
-	sceGuEnable(GU_BLEND);
-	sceGuTexFunc(GU_TFX_REPLACE , GU_TCC_RGB);
-	sceGuBlendFunc(GU_ADD, GU_DST_COLOR, GU_SRC_COLOR, 0, 0);
-
+//	if (r_fullbright.value)
+//		return;
+	if (r_lightmap.value)
+		sceGuDisable(GU_BLEND);
+	else
+		sceGuEnable(GU_BLEND);
+	sceGuDepthMask( GU_TRUE );
+	sceGuDepthFunc( GU_EQUAL );
+	sceGuDisable( GU_ALPHA_TEST );
+	sceGuBlendFunc( GU_ADD, GU_FIX, GU_SRC_COLOR, 0x000000, 0 );
+	sceGuTexFunc( GU_TFX_MODULATE, GU_TCC_RGBA );
 	if (LIGHTMAP_BYTES == 1)	
 		VID_SetPaletteLM();	
-
-	if (r_lightmap.value)
-	{
-		sceGuDisable(GU_BLEND);
-	}
 
 	for (i=0 ; i<MAX_LIGHTMAPS ; i++)
 	{
@@ -628,12 +649,11 @@ static void R_BlendLightmaps (void)
 	if (LIGHTMAP_BYTES == 1)	
 		VID_SetPaletteTX();
 	
-	sceGuDisable(GU_BLEND);
-	sceGuTexFunc(GU_TFX_REPLACE, GU_TCC_RGB);
-	sceGuBlendFunc(GU_ADD, GU_SRC_ALPHA, GU_ONE_MINUS_SRC_ALPHA, 0, 0);
-
-	sceGuDepthMask (GU_FALSE);
-	
+	sceGuDisable( GU_BLEND );
+	sceGuDepthMask( GU_FALSE );
+	sceGuDepthFunc( GU_LEQUAL );
+	sceGuTexFunc( GU_TFX_REPLACE, GU_TCC_RGBA );
+	sceGuColor( 0xffffffff );
 }
 
 /*
@@ -901,6 +921,8 @@ static void DrawTextureChains (void)
 	int		i;
 	msurface_t	*s;
 	texture_t	*t;
+	// make sure what color is reset
+	sceGuColor( 0xffffffff );
 /*
 	if (!gl_texsort.value) {
 		GL_DisableMultitexture();
@@ -940,6 +962,47 @@ static void DrawTextureChains (void)
 	}
 }
 
+void R_SetRenderMode( entity_t *e )
+{
+	switch((int)e->rendermode )
+	{
+	case kRenderNormal:
+		sceGuColor( 0xffffffff );	
+		break;
+	case kRenderTransColor:
+		sceGuBlendFunc( GU_ADD, GU_SRC_ALPHA, GU_ONE_MINUS_SRC_ALPHA, 0, 0 );
+		//sceGuColor( GUCOLOR4UB( e->curstate.rendercolor.r, e->curstate.rendercolor.g, e->curstate.rendercolor.b, e->curstate.renderamt ) );
+	    sceGuColor(GU_RGBA((int)e->rendercolor[0],(int)e->rendercolor[1],(int)e->rendercolor[2], int(e->renderamt)));
+
+		sceGuTexFunc( GU_TFX_MODULATE, GU_TCC_RGBA );
+		sceGuDisable( GU_TEXTURE_2D );
+		sceGuEnable( GU_BLEND );
+		break;
+	case kRenderTransAdd:
+		sceGuTexFunc( GU_TFX_MODULATE, GU_TCC_RGBA );
+		//sceGuColor( GUCOLOR4F( tr.blend, tr.blend, tr.blend, 1.0f ) );
+		sceGuColor(GU_RGBA((int)e->renderamt, (int)e->renderamt, (int)e->renderamt, 255));
+		sceGuBlendFunc( GU_ADD, GU_FIX, GU_FIX, 0xffffff, 0xffffff );
+		sceGuDepthMask( GU_TRUE );
+		sceGuEnable( GU_BLEND );
+		break;
+	case kRenderTransAlpha:
+		sceGuEnable( GU_ALPHA_TEST );
+		sceGuTexFunc( GU_TFX_MODULATE, GU_TCC_RGBA );	
+		sceGuColor( 0xffffffff );
+		sceGuDisable( GU_BLEND );
+		sceGuAlphaFunc( GU_GREATER, 0x40, 0xff );
+		break;
+	default:
+		sceGuTexFunc( GU_TFX_MODULATE, GU_TCC_RGBA );
+		sceGuBlendFunc( GU_ADD, GU_SRC_ALPHA, GU_ONE_MINUS_SRC_ALPHA, 0, 0 );
+		//sceGuColor( GUCOLOR4F( 1.0f, 1.0f, 1.0f, tr.blend ) );
+		sceGuColor(GU_RGBA(255, 255, 255, (int)e->renderamt));
+		sceGuDepthMask( GU_TRUE );
+		sceGuEnable( GU_BLEND );
+		break;
+	}
+}
 /*
 =================
 R_DrawBrushModel
@@ -1011,55 +1074,9 @@ void R_DrawBrushModel (entity_t *e)
 			R_MarkLights (&cl_dlights[k], 1<<k,	clmodel->nodes + clmodel->hulls[0].firstclipnode);
 		}
 	}
-
+	
 	sceGumPushMatrix();
-
-	//Crow_bar half_life render.
-	if (e->rendermode == kRenderTransAdd)
-	{
-		float deg = e->renderamt / 255.0f;
-		float alpha1 = deg;
-	    float alpha2 = 1 - deg;
-
-		if(deg <= 0.7)
-           sceGuDepthMask(GU_TRUE);
-
-		sceGuEnable (GU_BLEND);
-		sceGuTexFunc(GU_TFX_MODULATE, GU_TCC_RGBA);
-        sceGuBlendFunc(GU_ADD, GU_FIX, GU_FIX,
-		GU_COLOR(alpha1,alpha1,alpha1,alpha1),
-		GU_COLOR(alpha2,alpha2,alpha2,alpha2));
-	}
-    else if (e->rendermode == kRenderTransAlpha)
-    {
-		sceGuEnable(GU_ALPHA_TEST);
-		sceGuTexFunc(GU_TFX_MODULATE, GU_TCC_RGBA);
-	}
-	else if (e->rendermode == kRenderGlow)
-	{
-        sceGuEnable(GU_BLEND);
-		sceGuTexFunc(GU_TFX_MODULATE, GU_TCC_RGBA);
-        sceGuColor(GU_RGBA(255, 255, 255, int(e->renderamt)));
-    }
-    else if (e->rendermode == kRenderTransTexture)
-	{
-		float deg =  e->renderamt / 255.0f;
-		float alpha1 = deg;
-	    float alpha2 = 1 - deg;
-	    if(deg <= 0.7)
-			sceGuDepthMask(GU_TRUE);
-        sceGuEnable(GU_BLEND);
-		sceGuBlendFunc(GU_ADD, GU_FIX, GU_FIX, GU_COLOR(alpha1,alpha1,alpha1,alpha1), GU_COLOR(alpha2,alpha2,alpha2,alpha2));
-		sceGuTexFunc(GU_TFX_MODULATE, GU_TCC_RGBA);
-		sceGuColor(GU_RGBA(255, 255, 255, int(e->renderamt))); 
-
-    }
-	else if (e->rendermode == kRenderTransColor)
-	{
-		sceGuTexFunc(GU_TFX_MODULATE, GU_TCC_RGBA);
-		sceGuColor(GU_RGBA(int(e->rendercolor[0]), int(e->rendercolor[1]), int(e->rendercolor[2]), int(e->renderamt)));
-   }
-
+	R_SetRenderMode(e);
 	e->angles[0] = -e->angles[0];	// stupid quake bug
 
     R_BlendedRotateForEntity  (e, 0);  //blend transform
@@ -1087,59 +1104,14 @@ void R_DrawBrushModel (entity_t *e)
 				R_RenderBrushPoly (psurf);
 		}
 	}
-	
-	if (e->rendermode != kRenderTransAdd )
-    {
-        if(e->rendermode == kRenderTransAlpha)
-        {
-		  sceGuDepthFunc( GU_EQUAL );
-        }
-		if(e->rendermode != kRenderTransTexture)
-			R_BlendLightmaps ();
-
-		if(e->rendermode == kRenderTransAlpha)
-        {
-		  sceGuDepthFunc( GU_LEQUAL );
-        }
-	}
-	
-	if (e->rendermode == kRenderTransAdd)
-	{
-        float deg = e->renderamt / 255.0f;
-
-		if(deg <= 0.7)
-           sceGuDepthMask(GU_FALSE);
-
-		sceGuTexFunc(GU_TFX_REPLACE, GU_TCC_RGB);
-		sceGuBlendFunc(GU_ADD, GU_SRC_ALPHA, GU_ONE_MINUS_SRC_ALPHA, 0, 0);
-        sceGuDisable (GU_BLEND);
-	}
-	else if(e->rendermode == kRenderTransAlpha)
-	{
-        sceGuAlphaFunc(GU_GREATER, 0, 0xff);
-        sceGuTexFunc(GU_TFX_REPLACE, GU_TCC_RGB);
-     	sceGuDisable(GU_ALPHA_TEST);
-	}
-    else if(e->rendermode == kRenderGlow)
-    {
-        sceGuColor(0xffffffff);
-        sceGuTexFunc(GU_TFX_REPLACE, GU_TCC_RGB);
-        sceGuDisable (GU_BLEND);
-    }
-    else if(e->rendermode == kRenderTransTexture)
-    {
-        sceGuColor(0xffffffff);
-        sceGuTexFunc(GU_TFX_REPLACE, GU_TCC_RGB);
-        sceGuDisable (GU_BLEND);
-		sceGuDepthMask(GU_FALSE);
-		sceGuBlendFunc(GU_ADD, GU_SRC_ALPHA, GU_ONE_MINUS_SRC_ALPHA, 0, 0);
-    }
-    else if(e->rendermode == kRenderTransColor)
-    {
-        sceGuColor(0xffffffff);
-        sceGuTexFunc(GU_TFX_REPLACE, GU_TCC_RGB);
-    }
+	if( e->rendermode == kRenderTransColor )
+		sceGuEnable( GU_TEXTURE_2D );
+	R_BlendLightmaps ();
 	e->rendermode = old_rendermode;
+	sceGuDisable( GU_ALPHA_TEST );
+	sceGuAlphaFunc( GU_GREATER, 0x00, 0xff );
+	sceGuDisable( GU_BLEND );
+	sceGuDepthMask( GU_FALSE );
 	clipping::end_brush_model();
 
 	sceGumPopMatrix();
@@ -1427,7 +1399,8 @@ void R_DrawWorld (void)
 	currenttexture = -1;
 
 	memset (lightmap_polys, 0, sizeof(lightmap_polys));
-
+	sceGuDisable( GU_ALPHA_TEST ); //test
+	sceGuDisable( GU_BLEND );
 	R_ClearSkyBox ();
 	R_RecursiveWorldNode (cl.worldmodel->nodes);
 	DrawTextureChains ();

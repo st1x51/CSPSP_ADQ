@@ -217,7 +217,7 @@ BoxOnPlaneSide
 Returns 1, 2, or 1 + 2
 ==================
 */
-int BoxOnPlaneSide_old (vec3_t emins, vec3_t emaxs, mplane_t *p)
+int BoxOnPlaneSide (vec3_t emins, vec3_t emaxs, mplane_t *p)
 {
 	float	dist1, dist2;
 	int		sides;
@@ -292,7 +292,7 @@ dist2 = p->normal[0]*emaxs[0] + p->normal[1]*emaxs[1] + p->normal[2]*emaxs[2];
 	return sides;
 }
 
-int BoxOnPlaneSide(vec3_t emins, vec3_t emaxs, mplane_t *p)
+int BoxOnPlaneSide_vfpu(vec3_t emins, vec3_t emaxs, mplane_t *p)
 {
 	int	sides;
 	__asm__ (

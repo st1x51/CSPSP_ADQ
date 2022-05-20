@@ -806,7 +806,7 @@ void R_DrawHLModel(entity_t	*curent)
             
 		    for (int c = 0; c < mesh->numnorms; c++, lv += 3, norms++, nbone++)
 			{
-                Lighting (&lv_tmp, *nbone, flags, (float *)norms);
+               // Lighting (&lv_tmp, *nbone, flags, (float *)norms); //idk wtf is this doing
 				// FIX: move this check out of the inner loop
 				if (flags & STUDIO_NF_CHROME)
 				 	Chrome(g_chrome[(float (*)[3])lv - g_pvlightvalues], *nbone, (float *)norms );
