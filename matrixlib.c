@@ -248,7 +248,8 @@ const matrix4x4 matrix4x4_identity =
 */
 void Matrix4x4_VectorTransform( const matrix4x4 in, const float v[3], float out[3] )
 {
-	__asm__ (
+#if __GNUC__ > 4
+	__asm__	(
 		".set			push\n"					// save assembler option
 		".set			noreorder\n"			// suppress reordering
 		"lv.q			C100,  0 + %1\n"		// C100 = in[0]
@@ -267,15 +268,16 @@ void Matrix4x4_VectorTransform( const matrix4x4 in, const float v[3], float out[
 		: "=m"( *out )
 		: "m"( *in ), "m"( *v )
 	);
-	/*
+#else
 	out[0] = v[0] * in[0][0] + v[1] * in[0][1] + v[2] * in[0][2] + in[0][3];
 	out[1] = v[0] * in[1][0] + v[1] * in[1][1] + v[2] * in[1][2] + in[1][3];
 	out[2] = v[0] * in[2][0] + v[1] * in[2][1] + v[2] * in[2][2] + in[2][3];
-	*/
+#endif
 }
 
 void Matrix4x4_VectorITransform( const matrix4x4 in, const float v[3], float out[3] )
 {
+#if __GNUC__ > 4
 	__asm__ (
 		".set			push\n"					// save assembler option
 		".set			noreorder\n"			// suppress reordering
@@ -300,7 +302,7 @@ void Matrix4x4_VectorITransform( const matrix4x4 in, const float v[3], float out
 		: "=m"( *out )
 		: "m"( *in ), "m"( *v )
 	);
-	/*
+#else
 	vec3_t	dir;
 
 	dir[0] = v[0] - in[0][3];
@@ -310,7 +312,7 @@ void Matrix4x4_VectorITransform( const matrix4x4 in, const float v[3], float out
 	out[0] = dir[0] * in[0][0] + dir[1] * in[1][0] + dir[2] * in[2][0];
 	out[1] = dir[0] * in[0][1] + dir[1] * in[1][1] + dir[2] * in[2][1];
 	out[2] = dir[0] * in[0][2] + dir[1] * in[1][2] + dir[2] * in[2][2];
-	*/
+#endif
 }
 
 void Matrix4x4_VectorRotate( const matrix4x4 in, const float v[3], float out[3] )
@@ -329,6 +331,7 @@ void Matrix4x4_VectorIRotate( const matrix4x4 in, const float v[3], float out[3]
 
 void Matrix4x4_ConcatTransforms( matrix4x4 out, const matrix4x4 in1, const matrix4x4 in2 )
 {
+#if __GNUC__ > 4	
 	__asm__ (
 		".set			push\n"					// save assembler option
 		".set			noreorder\n"			// suppress reordering
@@ -348,7 +351,7 @@ void Matrix4x4_ConcatTransforms( matrix4x4 out, const matrix4x4 in1, const matri
 		: "=m"( *out )
 		: "m"( *in1 ), "m"( *in2 )
 	);
-	/*
+#else
 	out[0][0] = in1[0][0] * in2[0][0] + in1[0][1] * in2[1][0] + in1[0][2] * in2[2][0];
 	out[0][1] = in1[0][0] * in2[0][1] + in1[0][1] * in2[1][1] + in1[0][2] * in2[2][1];
 	out[0][2] = in1[0][0] * in2[0][2] + in1[0][1] * in2[1][2] + in1[0][2] * in2[2][2];
@@ -361,7 +364,7 @@ void Matrix4x4_ConcatTransforms( matrix4x4 out, const matrix4x4 in1, const matri
 	out[2][1] = in1[2][0] * in2[0][1] + in1[2][1] * in2[1][1] + in1[2][2] * in2[2][1];
 	out[2][2] = in1[2][0] * in2[0][2] + in1[2][1] * in2[1][2] + in1[2][2] * in2[2][2];
 	out[2][3] = in1[2][0] * in2[0][3] + in1[2][1] * in2[1][3] + in1[2][2] * in2[2][3] + in1[2][3];
-	*/
+#endif
 }
 
 void Matrix4x4_SetOrigin( matrix4x4 out, float x, float y, float z )
@@ -520,45 +523,47 @@ void Matrix4x4_ConvertToEntity( const matrix4x4 in, vec3_t angles, vec3_t origin
 
 void Matrix4x4_TransformPositivePlane( const matrix4x4 in, const vec3_t normal, float d, vec3_t out, float *dist )
 {
-	__asm__ (
-		".set			push\n"					// save assembler option
-		".set			noreorder\n"			// suppress reordering
-		"lv.q			C100,  0 + %2\n"		// C100 = in[0]
-		"lv.q			C110, 16 + %2\n"		// C110 = in[1]
-		"lv.q			C120, 32 + %2\n"		// C120 = in[2]
-		"lv.s			S200,  0 + %3\n"		// S200 = normal[0]
-		"lv.s			S201,  4 + %3\n"		// S201 = normal[1]
-		"lv.s			S202,  8 + %3\n"		// S202 = normal[2]
-		"lv.s			S210, %4\n"				// S210 = d
-		"vdot.t			S211, C100, C100\n"		// S211 = C100 * C100
-		"vsqrt.s		S211, S211\n"			// S211 = sqrt( S211 )
-		"vrcp.s			S212, S211\n"			// S212 = 1 / S211
-		"vtfm3.t		C000, M100, C200\n"		// C000 = M100 * C200
-		"vscl.t			C000, C000, S212\n"		// C000 = C000 * S211
-		"vmul.s			S003, S210, S211\n"		// S003 = S210 * S211
-		"vdot.t			S010, R103,	C000\n"		// S010 = R103 * C000
-		"vadd.s			S003, S003, S010\n"		// S003 = S003 + S010
-		"sv.s			S000,  0 + %0\n"		// out[0] = S000
-		"sv.s			S001,  4 + %0\n"		// out[1] = S001
-		"sv.s			S002,  8 + %0\n"		// out[2] = S002
-		"sv.s			S003, %1\n"				// dist = S003
-		".set			pop\n"					// restore assembler option
-		: "=m"( *out ), "=m"( *dist )
-		: "m"( *in ), "m"( *normal ), "m"( d )
-	);
-	/*
-	float	scale = sqrt( in[0][0] * in[0][0] + in[0][1] * in[0][1] + in[0][2] * in[0][2] );
-	float	iscale = 1.0f / scale;
+#if __GNUC__ > 4
+		__asm__ (
+			".set			push\n"					// save assembler option
+			".set			noreorder\n"			// suppress reordering
+			"lv.q			C100,  0 + %2\n"		// C100 = in[0]
+			"lv.q			C110, 16 + %2\n"		// C110 = in[1]
+			"lv.q			C120, 32 + %2\n"		// C120 = in[2]
+			"lv.s			S200,  0 + %3\n"		// S200 = normal[0]
+			"lv.s			S201,  4 + %3\n"		// S201 = normal[1]
+			"lv.s			S202,  8 + %3\n"		// S202 = normal[2]
+			"lv.s			S210, %4\n"				// S210 = d
+			"vdot.t			S211, C100, C100\n"		// S211 = C100 * C100
+			"vsqrt.s		S211, S211\n"			// S211 = sqrt( S211 )
+			"vrcp.s			S212, S211\n"			// S212 = 1 / S211
+			"vtfm3.t		C000, M100, C200\n"		// C000 = M100 * C200
+			"vscl.t			C000, C000, S212\n"		// C000 = C000 * S211
+			"vmul.s			S003, S210, S211\n"		// S003 = S210 * S211
+			"vdot.t			S010, R103,	C000\n"		// S010 = R103 * C000
+			"vadd.s			S003, S003, S010\n"		// S003 = S003 + S010
+			"sv.s			S000,  0 + %0\n"		// out[0] = S000
+			"sv.s			S001,  4 + %0\n"		// out[1] = S001
+			"sv.s			S002,  8 + %0\n"		// out[2] = S002
+			"sv.s			S003, %1\n"				// dist = S003
+			".set			pop\n"					// restore assembler option
+			: "=m"( *out ), "=m"( *dist )
+			: "m"( *in ), "m"( *normal ), "m"( d )
+		);
+#else
+		float	scale = sqrt( in[0][0] * in[0][0] + in[0][1] * in[0][1] + in[0][2] * in[0][2] );
+		float	iscale = 1.0f / scale;
 
-	out[0] = (normal[0] * in[0][0] + normal[1] * in[0][1] + normal[2] * in[0][2]) * iscale;
-	out[1] = (normal[0] * in[1][0] + normal[1] * in[1][1] + normal[2] * in[1][2]) * iscale;
-	out[2] = (normal[0] * in[2][0] + normal[1] * in[2][1] + normal[2] * in[2][2]) * iscale;
-	*dist = d * scale + ( out[0] * in[0][3] + out[1] * in[1][3] + out[2] * in[2][3] );
-	*/
+		out[0] = (normal[0] * in[0][0] + normal[1] * in[0][1] + normal[2] * in[0][2]) * iscale;
+		out[1] = (normal[0] * in[1][0] + normal[1] * in[1][1] + normal[2] * in[1][2]) * iscale;
+		out[2] = (normal[0] * in[2][0] + normal[1] * in[2][1] + normal[2] * in[2][2]) * iscale;
+		*dist = d * scale + ( out[0] * in[0][3] + out[1] * in[1][3] + out[2] * in[2][3] );
+#endif		
 }
 
 void Matrix4x4_TransformStandardPlane( const matrix4x4 in, const vec3_t normal, float d, vec3_t out, float *dist )
 {
+#if __GNUC__ > 4
 	__asm__ (
 		".set			push\n"					// save assembler option
 		".set			noreorder\n"			// suppress reordering
@@ -585,7 +590,7 @@ void Matrix4x4_TransformStandardPlane( const matrix4x4 in, const vec3_t normal, 
 		: "=m"( *out ), "=m"( *dist )
 		: "m"( *in ), "m"( *normal ), "m"( d )
 	);
-	/*
+#else
 	float scale = sqrt( in[0][0] * in[0][0] + in[0][1] * in[0][1] + in[0][2] * in[0][2] );
 	float iscale = 1.0f / scale;
 
@@ -593,7 +598,7 @@ void Matrix4x4_TransformStandardPlane( const matrix4x4 in, const vec3_t normal, 
 	out[1] = (normal[0] * in[1][0] + normal[1] * in[1][1] + normal[2] * in[1][2]) * iscale;
 	out[2] = (normal[0] * in[2][0] + normal[1] * in[2][1] + normal[2] * in[2][2]) * iscale;
 	*dist = d * scale - ( out[0] * in[0][3] + out[1] * in[1][3] + out[2] * in[2][3] );
-	*/
+#endif
 }
 
 void Matrix4x4_Invert_Simple( matrix4x4 out, const matrix4x4 in1 )

@@ -999,11 +999,11 @@ void DrawSurfaceDecals( msurface_t *fa )
 	if( e->rendermode == kRenderTransColor )
 		sceGuEnable( GU_TEXTURE_2D );
 
-	//if( e->curstate.rendermode == kRenderTransTexture || e->curstate.rendermode == kRenderTransAdd )
-	//	GL_Cull( GL_NONE );
+	if( e->rendermode == kRenderTransTexture || e->rendermode == kRenderTransAdd )
+		sceGuDisable( GU_CULL_FACE );
 	if( e->rendermode == kRenderTransTexture )
 		return;
-	sceGuDepthOffset(-256);
+	sceGuDepthOffset(-48);
 
 	if( fa->flags & SURF_TRANSPARENT )
 	{
@@ -1062,8 +1062,11 @@ void DrawSurfaceDecals( msurface_t *fa )
 
 	sceGuDepthOffset( 0 );
 
-	//if( e->curstate.rendermode == kRenderTransTexture || e->curstate.rendermode == kRenderTransAdd )
-	//	GL_Cull( GL_FRONT );
+	if( e->rendermode == kRenderTransTexture || e->rendermode == kRenderTransAdd )
+	{
+		sceGuEnable( GU_CULL_FACE );
+		sceGuFrontFace(GU_CW);
+	}
 
 	if( e->rendermode == kRenderTransColor )
 		sceGuDisable( GU_TEXTURE_2D );

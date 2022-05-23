@@ -12,7 +12,7 @@ endif
 PSPLIBSDIR		= $(PSPSDK)/..
 
 # Project specific variables.
-VERSION		= 0.8
+VERSION		= 1.0
 SRC_DIR		= ..
 OBJ_DIR		= ../
 TARGET		= $(OBJ_DIR)psp/build/cspsp

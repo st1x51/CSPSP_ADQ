@@ -180,6 +180,7 @@ void VID_Init(unsigned char* palette)
 		sceGuClearColor(GU_RGBA(0x10,0x20,0x40,0xff));
 
 		// Set up depth.
+		sceGuDepthOffset( 0 );
 		sceGuDepthRange(0, 65535);
 		sceGuDepthFunc(GU_LEQUAL);
 		sceGuEnable(GU_DEPTH_TEST);

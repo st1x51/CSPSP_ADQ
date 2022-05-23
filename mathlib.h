@@ -22,10 +22,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 typedef float vec_t;
 typedef vec_t vec2_t[2];
 typedef vec_t vec3_t[3];
-typedef vec_t vec4_t[4];
+typedef vec_t vec4_t[4] __attribute__( ( aligned( 16 ) ) );
 typedef vec_t vec5_t[5];
-typedef vec_t matrix3x4[3][4];
-typedef vec_t matrix4x4[4][4];
+typedef vec_t matrix3x4[3][4] __attribute__( ( aligned( 16 ) ) );
+typedef vec_t matrix4x4[4][4] __attribute__( ( aligned( 16 ) ) );
 
 typedef	int	fixed4_t;
 typedef	int	fixed8_t;

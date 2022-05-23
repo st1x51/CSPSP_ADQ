@@ -95,7 +95,7 @@ cvar_t	r_shadows          = {"r_shadows",          "0",qtrue };
 cvar_t	r_mirroralpha      = {"r_mirroralpha",      "1"         };
 cvar_t	r_wateralpha       = {"r_wateralpha",       "0.6", qtrue};
 cvar_t	r_vsync            = {"r_vsync",            "0",   qtrue};
-cvar_t	r_decals           = {"r_decals",           "4096",   qtrue};
+cvar_t	r_decals           = {"r_decals",           "1024",   qtrue};
 
 cvar_t	r_mipmaps          = {"r_mipmaps",          "0",   qtrue};
 cvar_t	r_mipmaps_func     = {"r_mipmaps_func",     "0",   qtrue};
